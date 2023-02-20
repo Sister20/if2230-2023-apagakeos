@@ -9,13 +9,25 @@
 struct GlobalDescriptorTable global_descriptor_table = {
     .table = {
         {
-            // TODO : Implement
+            // Null Descriptor
+            // Base = 0x00
+            // Limit = 0x00
+            // Access Byte = 0x0
+            // Flags = 0x0
         },
         {
-            // TODO : Implement
+            // Kernel code segment
+            // Base = 0x00
+            // Limit = 0xFFFFF
+            // Access Byte = 0x9A
+            // Flags = 0xCF
         },
         {
-            // TODO : Implement
+            // Kernel data segment
+            // Base = 0x00
+            // Limit = 0xFFFFF
+            // Access Byte = 0x92
+            // Flags = 0xCF
         }
     }
 };
