@@ -18,9 +18,9 @@ LFLAGS        = -T $(SOURCE_FOLDER)/linker.ld -melf_i386
 ISOFLAGS	  = -no-emul-boot -boot-load-size 4 -A os -input-charset utf8 -quiet -boot-info-table
 
 run: all
-	@qemu-system-i386 -s -S -cdrom $(OUTPUT_FOLDER)/$(ISO_NAME).iso
+	@qemu-system-i386 -s -S -cdrom $(OUTPUT_FOLDER)/$(ISO_NAME)
 all: build
-build: kernel iso
+build: iso
 clean:
 	rm -rf *.o *.iso $(OUTPUT_FOLDER)/kernel
 
@@ -31,10 +31,9 @@ kernel:
 	@echo Linking object files and generate elf32...
 	@rm -f *.o
 
-iso:
+iso: kernel
 	@mkdir -p $(OUTPUT_FOLDER)/iso/boot/grub
 	@cp $(OUTPUT_FOLDER)/kernel     $(OUTPUT_FOLDER)/iso/boot/
 	@cp other/grub1                 $(OUTPUT_FOLDER)/iso/boot/grub/
 	@cp $(SOURCE_FOLDER)/menu.lst   $(OUTPUT_FOLDER)/iso/boot/grub/
 	@cd bin && genisoimage -R -b boot/grub/grub1 $(ISOFLAGS) -o $(ISO_NAME) iso
-	@rm -r $(OUTPUT_FOLDER)/iso/
