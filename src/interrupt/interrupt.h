@@ -94,6 +94,9 @@ struct InterruptStack {
 // Activate PIC mask for keyboard only
 void activate_keyboard_interrupt(void);
 
+// Deactivate PIC mask for keyboard only
+void deactivate_keyboard_interrupt(void);
+
 // I/O port wait, around 1-4 microsecond, for I/O synchronization purpose
 void io_wait(void);
 
