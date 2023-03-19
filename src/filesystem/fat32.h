@@ -2,16 +2,13 @@
 #define _FAT32_H
 
 #include "disk.h"
-#include "../lib-header/stdtype.h"
-
+#include "../std/stdtype.h"
 
 /**
  * FAT32 - IF2230 edition - 2023
  * Check "IF2230 - Guidebook - Milestone 2" for more details
  * https://docs.google.com/document/d/1IFyxHSYYpKgecHcS0T64oDc4bVElaq8tBcm1_mjjGGM/edit#
  */
-
-
 
 /* -- IF2230 File System constants -- */
 #define BOOT_SECTOR           0

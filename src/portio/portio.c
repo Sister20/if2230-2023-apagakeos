@@ -1,5 +1,5 @@
-#include "lib-header/stdtype.h"
-#include "lib-header/portio.h"
+#include "../std/stdtype.h"
+#include "portio.h"
 
 void out16(uint16_t port, uint16_t data) {
     __asm__(

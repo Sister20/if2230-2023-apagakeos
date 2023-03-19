@@ -1,4 +1,4 @@
-#include "../lib-header/stdtype.h"
+#include "../std/stdtype.h"
 #include "idt.h"
 
 /**
@@ -34,7 +34,7 @@ struct IDTR _idt_idtr = {
 
 void set_interrupt_gate(uint8_t int_vector, void *handler_address, uint16_t gdt_seg_selector, uint8_t privilege) {
     struct IDTGate *idt_int_gate = &interrupt_descriptor_table.table[int_vector];
-    idt_int_gate->offset_low  = &handler_address;
+    idt_int_gate->offset_low  = handler_address;
     idt_int_gate->segment     = gdt_seg_selector;
 
     // Target system 32-bit and flag this as valid interrupt gate
@@ -44,7 +44,7 @@ void set_interrupt_gate(uint8_t int_vector, void *handler_address, uint16_t gdt_
     idt_int_gate->_r_bit_3    = INTERRUPT_GATE_R_BIT_3;
     idt_int_gate->dpl_bit     = privilege;
     idt_int_gate->valid_bit   = 1;
-    idt_int_gate->offset_high = &handler_address;
+    idt_int_gate->offset_high = handler_address;
 }
 
 void initialize_idt(void) {

@@ -1,8 +1,8 @@
 #ifndef _USER_ISR_H
 #define _USER_ISR_H
 
-#include "interrupt.h"
-#include "stdtype.h"
+#include "../interrupt/interrupt.h"
+#include "../std/stdtype.h"
 
 #define EXT_SCANCODE_UP        0x48
 #define EXT_SCANCODE_DOWN      0x50
@@ -37,10 +37,6 @@ struct KeyboardDriverState {
     char    keyboard_buffer[KEYBOARD_BUFFER_SIZE];
 } __attribute((packed));
 
-
-
-
-
 /* -- Driver Interfaces -- */
 
 // Activate keyboard ISR / start listen keyboard & save to buffer
@@ -54,7 +50,6 @@ void get_keyboard_buffer(char *buf);
 
 // Check whether keyboard ISR is active or not - @return Equal with keyboard_input_on value
 bool is_keyboard_blocking(void);
-
 
 /* -- Keyboard Interrupt Service Routine -- */
 

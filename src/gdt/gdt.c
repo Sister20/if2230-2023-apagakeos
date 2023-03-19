@@ -1,5 +1,5 @@
-#include "lib-header/stdtype.h"
-#include "lib-header/gdt.h"
+#include "../std/stdtype.h"
+#include "../gdt/gdt.h"
 
 /**
  * global_descriptor_table, predefined GDT.
