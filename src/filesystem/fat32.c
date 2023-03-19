@@ -1,6 +1,9 @@
-#include "std/stdtype.h"
+#include "../std/stdtype.h"
 #include "fat32.h"
-#include "std/stdmem.h"
+#include "../std/stdmem.h"
+
+struct FAT32DriverState driverState;
+struct FAT32FileAllocationTable fatTable;
 
 const uint8_t fs_signature[BLOCK_SIZE] = {
     'C', 'o', 'u', 'r', 's', 'e', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ',
@@ -12,9 +15,6 @@ const uint8_t fs_signature[BLOCK_SIZE] = {
     [BLOCK_SIZE-1] = 'k',
 };
 
-struct FAT32DriverState driverState;
-struct FAT32DirectoryTable root;
-
 /* -- Driver Interfaces -- */
 
 /**
@@ -24,7 +24,7 @@ struct FAT32DirectoryTable root;
  * @return uint32_t Logical Block Address
  */
 uint32_t cluster_to_lba(uint32_t cluster) {
-    return cluster * CLUSTER_SIZE;
+    return cluster * CLUSTER_BLOCK_COUNT;
 }
 
 /**
@@ -53,12 +53,25 @@ bool is_empty_storage(void) {
  * and initialized root directory) into cluster number 1
  */
 void create_fat32(void) {
-    struct FAT32FileAllocationTable table = {
-        .cluster_map = {CLUSTER_0_VALUE,CLUSTER_1_VALUE, (uint32_t)root.table}
-    };
-
     write_blocks(fs_signature, BOOT_SECTOR, 1);
-    write_blocks(&table.cluster_map, cluster_to_lba(1), CLUSTER_BLOCK_COUNT*3);
+
+    fatTable.cluster_map[0] = CLUSTER_0_VALUE;
+    fatTable.cluster_map[1] = CLUSTER_1_VALUE;
+    fatTable.cluster_map[2] = FAT32_FAT_END_OF_FILE;
+    write_clusters(fatTable.cluster_map, 1, 1);
+    
+    struct FAT32DirectoryEntry rootSpecial = {
+        .name = {'r','o','o','t'},
+        .attribute = ATTR_SUBDIRECTORY,
+        .user_attribute = UATTR_NOT_EMPTY,
+        .cluster_high = 0x00,
+        .cluster_low = 0x02,
+        .filesize = 0
+    };
+    struct FAT32DirectoryTable rootDir = {
+        .table = {rootSpecial}
+    };
+    write_clusters(rootDir.table, 2, 1);
 }
 
 /**
@@ -68,10 +81,9 @@ void create_fat32(void) {
 void initialize_filesystem_fat32(void) {
     if (is_empty_storage()) {
         create_fat32();
-    }
-    else {
-        read_blocks(&(driverState.fat_table), cluster_to_lba(1), (uint8_t) CLUSTER_SIZE);
-        
+    } else {
+        read_clusters(&driverState.fat_table, 1, 1);
+        read_clusters(&driverState.dir_table_buf, 2, 1);
     }
 }
 
@@ -98,10 +110,6 @@ void write_clusters(const void *ptr, uint32_t cluster_number, uint8_t cluster_co
 void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count) {
     read_blocks(ptr, cluster_to_lba(cluster_number), CLUSTER_BLOCK_COUNT*cluster_count);
 }
-
-
-
-
 
 /* -- CRUD Operation -- */
 
