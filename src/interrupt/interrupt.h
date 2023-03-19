@@ -1,7 +1,7 @@
 #ifndef _INTERRUPT_H
 #define _INTERRUPT_H
 
-#include "stdtype.h"
+#include "../lib-header/stdtype.h"
 
 /* -- PIC constants -- */
 
@@ -34,7 +34,6 @@
 #define ICW4_BUF_MASTER      0x0C   /* Buffered mode/master */
 #define ICW4_SFNM            0x10   /* Special fully nested (not) */
 
-
 /* -- PICs IRQ list -- */
 
 // PIC Master
@@ -56,7 +55,6 @@
 #define IRQ_FPU          13
 #define IRQ_PRIMARY_ATA  14
 #define IRQ_SECOND_ATA   15
-
 
 /**
  * CPURegister, store CPU registers that can be used for interrupt handler / ISRs
@@ -91,10 +89,6 @@ struct InterruptStack {
     uint32_t cs;
     uint32_t eflags;
 } __attribute__((packed));
-
-
-
-
 
 // Activate PIC mask for keyboard only
 void activate_keyboard_interrupt(void);

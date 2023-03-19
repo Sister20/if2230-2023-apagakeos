@@ -18,7 +18,6 @@ call_generic_handler:
     push    ebx
     push    eax
 
-
     ; call the C function
     call    main_interrupt_handler
 
@@ -40,8 +39,6 @@ call_generic_handler:
     ; improper value will cause invalid return address & register
     sti
     iret
-
-
 
 ; Macro for creating interrupt handler that only push interrupt number
 %macro no_error_code_interrupt_handler 1
@@ -115,8 +112,6 @@ no_error_code_interrupt_handler 31 ; 0x1F - Reserved
 no_error_code_interrupt_handler i
 %assign i i+1 
 %endrep
-
-
 
 ; ISR stub table, useful for reducing code repetition
 isr_stub_table:

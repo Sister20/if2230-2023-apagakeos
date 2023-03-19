@@ -44,7 +44,6 @@ struct SegmentDescriptor {
     uint8_t granularity     : 1;
     uint8_t base_high;
 
-
 } __attribute__((packed));
 
 /**
