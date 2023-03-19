@@ -5,23 +5,7 @@
  * interrupt_descriptor_table, predefined IDT.
  * Initial IDTGate already set properly according to IDT definition
  */
-struct InterruptDescriptorTable interrupt_descriptor_table = {
-    .table = {
-        {
-            .offset_low = 0x0000,
-            .segment = 0x0000,
-
-            ._reserved = 0x00,
-            ._r_bit_1 = 0x00,
-            ._r_bit_2 = 0x00,
-            .gate_32 = 0x00,
-            ._r_bit_3 = 0x00,
-            .dpl_bit = 0x00,
-            .valid_bit = 0x01,
-            .offset_high = 0x00,
-        }
-    }
-};
+struct InterruptDescriptorTable interrupt_descriptor_table;
 
 /**
  * _idt_idtr, predefined system IDTR. 
