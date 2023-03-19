@@ -19,6 +19,7 @@ ISOFLAGS	  = -no-emul-boot -boot-load-size 4 -A os -input-charset utf8 -quiet -b
 
 run: all
 	@qemu-system-i386 -s -S -cdrom $(OUTPUT_FOLDER)/$(ISO_NAME)
+	qemu-system-i386 -s -S -drive file=storage.bin,format=raw,if=ide,index=0,media=disk -cdrom os2023.iso
 all: build
 build: iso
 clean:
@@ -40,3 +41,9 @@ iso: kernel
 	@cp other/grub1                 $(OUTPUT_FOLDER)/iso/boot/grub/
 	@cp $(SOURCE_FOLDER)/menu.lst   $(OUTPUT_FOLDER)/iso/boot/grub/
 	@cd bin && genisoimage -R -b boot/grub/grub1 $(ISOFLAGS) -o $(ISO_NAME) iso
+
+# Disk
+DISK_NAME      = storage
+
+disk:
+	@qemu-img create -f raw $(OUTPUT_FOLDER)/$(DISK_NAME).bin 4M
