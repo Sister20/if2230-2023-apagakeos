@@ -1,7 +1,7 @@
-#include "../framebuffer/framebuffer.h"
-#include "../std/stdtype.h"
-#include "../std/stdmem.h"
-#include "../portio/portio.h"
+#include "framebuffer/framebuffer.h"
+#include "std/stdtype.h"
+#include "std/stdmem.h"
+#include "portio/portio.h"
 
 void framebuffer_set_cursor(uint8_t r, uint8_t c) {
     // Initialized the cursor position byte

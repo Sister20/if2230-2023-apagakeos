@@ -1,8 +1,8 @@
 #ifndef _INTERRUPT_H
 #define _INTERRUPT_H
 
-#include "../std/stdtype.h"
-#include "../portio/portio.h"
+#include "std/stdtype.h"
+#include "portio/portio.h"
 
 /* -- PIC constants -- */
 

@@ -1,8 +1,8 @@
 #ifndef _USER_ISR_H
 #define _USER_ISR_H
 
-#include "../interrupt/interrupt.h"
-#include "../std/stdtype.h"
+#include "interrupt/interrupt.h"
+#include "std/stdtype.h"
 
 #define EXT_SCANCODE_UP        0x48
 #define EXT_SCANCODE_DOWN      0x50

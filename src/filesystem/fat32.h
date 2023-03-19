@@ -2,7 +2,7 @@
 #define _FAT32_H
 
 #include "disk.h"
-#include "../std/stdtype.h"
+#include "std/stdtype.h"
 
 /**
  * FAT32 - IF2230 edition - 2023
@@ -32,8 +32,6 @@
 #define ATTR_SUBDIRECTORY     0b00010000
 #define UATTR_NOT_EMPTY       0b10101010
 
-
-
 // Boot sector signature for this file system "FAT32 - IF2230 edition"
 extern const uint8_t fs_signature[BLOCK_SIZE];
 
@@ -41,10 +39,6 @@ extern const uint8_t fs_signature[BLOCK_SIZE];
 struct ClusterBuffer {
     uint8_t buf[CLUSTER_SIZE];
 } __attribute__((packed));
-
-
-
-
 
 /* -- FAT32 Data Structures -- */
 
@@ -100,10 +94,6 @@ struct FAT32DirectoryTable {
     struct FAT32DirectoryEntry table[CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry)];
 } __attribute__((packed));
 
-
-
-
-
 /* -- FAT32 Driver -- */
 
 /**
@@ -135,10 +125,6 @@ struct FAT32DriverRequest {
     uint32_t  parent_cluster_number;
     uint32_t  buffer_size;
 } __attribute__((packed));
-
-
-
-
 
 /* -- Driver Interfaces -- */
 

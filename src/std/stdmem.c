@@ -1,4 +1,4 @@
-#include "../std/stdtype.h"
+#include "stdtype.h"
 #include "stdmem.h"
 
 void* memset(void *s, int c, size_t n) {

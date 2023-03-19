@@ -1,5 +1,5 @@
 #include "interrupt.h"
-#include "../portio/portio.h"
+#include "portio/portio.h"
 
 void activate_keyboard_interrupt(void) {
     out(PIC1_DATA, PIC_DISABLE_ALL_MASK ^ (1 << IRQ_KEYBOARD));

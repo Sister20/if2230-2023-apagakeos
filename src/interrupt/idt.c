@@ -1,4 +1,4 @@
-#include "../std/stdtype.h"
+#include "std/stdtype.h"
 #include "idt.h"
 
 /**
