@@ -2,7 +2,7 @@
 #define _FAT32_H
 
 #include "disk.h"
-#include "stdtype.h"
+#include "../lib-header/stdtype.h"
 
 
 /**

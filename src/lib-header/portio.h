@@ -3,6 +3,10 @@
 
 #include "lib-header/stdtype.h"
 
+void out16(uint16_t port, uint16_t data);
+
+uint16_t in16(uint16_t port);
+
 /** out:
  *  Sends the given data to the given I/O port
  *

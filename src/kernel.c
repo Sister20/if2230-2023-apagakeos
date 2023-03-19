@@ -4,19 +4,49 @@
 #include "lib-header/gdt.h"
 #include "lib-header/framebuffer.h"
 #include "lib-header/kernel_loader.h"
+#include "filesystem/fat32.h"
 
 void kernel_setup(void) {
     enter_protected_mode(&_gdt_gdtr);
+    // pic_remap();
+    // initialize_idt();
+    // activate_keyboard_interrupt();
     framebuffer_clear();
-    framebuffer_write(11, 35,  'A', 0, 0xF);
-    framebuffer_write(11, 36,  'p', 0, 0xF);
-    framebuffer_write(11, 37, 'a', 0, 0xF);
-    framebuffer_write(11, 38, 'G', 0, 0xF);
-    framebuffer_write(11, 39, 'a', 0, 0xF);
-    framebuffer_write(11, 40, 'K', 0, 0xF);
-    framebuffer_write(11, 41, 'e', 0, 0xF);
-    framebuffer_write(11, 42, 'O', 0, 0xF);
-    framebuffer_write(11, 43, 'S', 0, 0xF);
-    framebuffer_set_cursor(11, 39);
+    framebuffer_set_cursor(0, 0);
+    initialize_filesystem_fat32();
+    // keyboard_state_activate();
+
+    // struct ClusterBuffer cbuf[5];
+    // for (uint32_t i = 0; i < 5; i++)
+    //     for (uint32_t j = 0; j < CLUSTER_SIZE; j++)
+    //         cbuf[i].buf[j] = i + 'a';
+
+    // struct FAT32DriverRequest request = {
+    //     .buf                   = cbuf,
+    //     .name                  = "ikanaide",
+    //     .ext                   = "uwu",
+    //     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+    //     .buffer_size           = 0,
+    // } ;
+
+    // write(request);  // Create folder "ikanaide"
+    // memcpy(request.name, "kano1   ", 8);
+    // write(request);  // Create folder "kano1"
+    // memcpy(request.name, "ikanaide", 8);
+    // delete(request); // Delete first folder, thus creating hole in FS
+
+    // memcpy(request.name, "daijoubu", 8);
+    // request.buffer_size = 5*CLUSTER_SIZE;
+    // write(request);  // Create fragmented file "daijoubu"
+
+    // struct ClusterBuffer readcbuf;
+    // read_clusters(&readcbuf, ROOT_CLUSTER_NUMBER+1, 1); 
+    // // If read properly, readcbuf should filled with 'a'
+
+    // request.buffer_size = CLUSTER_SIZE;
+    // read(request);   // Failed read due not enough buffer size
+    // request.buffer_size = 5*CLUSTER_SIZE;
+    // read(request);   // Success read on file "daijoubu"
+
     while (TRUE);
 }
