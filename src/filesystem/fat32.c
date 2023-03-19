@@ -13,6 +13,7 @@ const uint8_t fs_signature[BLOCK_SIZE] = {
 };
 
 struct FAT32DriverState driverState;
+struct FAT32DirectoryTable root;
 
 /* -- Driver Interfaces -- */
 
@@ -41,7 +42,9 @@ void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uin
  * @return True if memcmp(boot_sector, fs_signature) returning inequality
  */
 bool is_empty_storage(void) {
-    return memcmp(fs_signature, BOOT_SECTOR, BLOCK_SIZE);
+    uint8_t *temp = 0;
+    read_blocks(temp,BOOT_SECTOR,1);
+    return memcmp(fs_signature, temp, BLOCK_SIZE) != 0;
 }
 
 /**
@@ -50,13 +53,12 @@ bool is_empty_storage(void) {
  * and initialized root directory) into cluster number 1
  */
 void create_fat32(void) {
-    struct FAT32FileAllocationTable table; 
-    table.cluster_map[0] = CLUSTER_0_VALUE;
-    table.cluster_map[1] = CLUSTER_1_VALUE;
-    table.cluster_map[2] = FAT32_FAT_END_OF_FILE;
+    struct FAT32FileAllocationTable table = {
+        .cluster_map = {CLUSTER_0_VALUE,CLUSTER_1_VALUE, (uint32_t)root.table}
+    };
 
-    write_blocks(fs_signature, cluster_to_lba(0), (uint8_t) CLUSTER_SIZE);
-    write_blocks(&table, cluster_to_lba(1), (uint8_t) CLUSTER_SIZE);
+    write_blocks(fs_signature, BOOT_SECTOR, 1);
+    write_blocks(&table.cluster_map, cluster_to_lba(1), CLUSTER_BLOCK_COUNT*3);
 }
 
 /**
@@ -81,7 +83,9 @@ void initialize_filesystem_fat32(void) {
  * @param cluster_number Cluster number to write
  * @param cluster_count  Cluster count to write, due limitation of write_blocks block_count 255 => max cluster_count = 63
  */
-void write_clusters(const void *ptr, uint32_t cluster_number, uint8_t cluster_count);
+void write_clusters(const void *ptr, uint32_t cluster_number, uint8_t cluster_count) {
+    write_blocks(ptr, cluster_to_lba(cluster_number), CLUSTER_BLOCK_COUNT*cluster_count);
+}
 
 /**
  * Read cluster operation, wrapper for read_blocks().
@@ -91,7 +95,9 @@ void write_clusters(const void *ptr, uint32_t cluster_number, uint8_t cluster_co
  * @param cluster_number Cluster number to read
  * @param cluster_count  Cluster count to read, due limitation of read_blocks block_count 255 => max cluster_count = 63
  */
-void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count);
+void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count) {
+    read_blocks(ptr, cluster_to_lba(cluster_number), CLUSTER_BLOCK_COUNT*cluster_count);
+}
 
 
 
