@@ -3,6 +3,9 @@ ASM           = nasm
 LIN           = ld
 CC            = gcc
 
+# Disk
+DISK_NAME      = storage
+
 # Directory
 SOURCE_FOLDER = src
 OUTPUT_FOLDER = bin
@@ -21,7 +24,9 @@ run: all
 	@qemu-system-i386 -s -S -drive file=bin/storage.bin,format=raw,if=ide,index=0,media=disk -cdrom bin/os2023.iso
 	
 all: build
+
 build: iso
+
 clean:
 	rm -rf *.o *.iso $(OUTPUT_FOLDER)/kernel
 
@@ -47,9 +52,6 @@ iso: kernel
 	@cp other/grub1                 $(OUTPUT_FOLDER)/iso/boot/grub/
 	@cp $(SOURCE_FOLDER)/menu.lst   $(OUTPUT_FOLDER)/iso/boot/grub/
 	@cd bin && genisoimage -R -b boot/grub/grub1 $(ISOFLAGS) -o $(ISO_NAME) iso
-
-# Disk
-DISK_NAME      = storage
 
 disk:
 	@qemu-img create -f raw $(OUTPUT_FOLDER)/$(DISK_NAME).bin 4M

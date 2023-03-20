@@ -227,6 +227,7 @@ int8_t write(struct FAT32DriverRequest request) {
         // update parent directory table and write it to parent cluster
         struct FAT32DirectoryEntry dirEntry = {
             .name = {request.name[0], request.name[1], request.name[2], request.name[3], request.name[4], request.name[5], request.name[6], request.name[7]},
+            .ext = {request.ext[0], request.ext[1], request.ext[2]},
             .attribute = ATTR_SUBDIRECTORY,
             .user_attribute = UATTR_NOT_EMPTY,
             .cluster_high = clusterNumber >> 16,
@@ -332,7 +333,13 @@ int8_t delete(struct FAT32DriverRequest request) {
 
     // if the entry is a file, delete it. if the entry is a directory, check if it was empty
     if (!isDirectory) {
-        // delete entry by removing its flag, and write it to parent cluster
+        // delete entry by removing its signature, and write it to parent cluster
+        for (int i = 0; i < 8; i++) {
+        driverState.dir_table_buf.table[entryRow].name[i] = 0x00;
+        if (i < 3) {
+            driverState.dir_table_buf.table[entryRow].ext[i] = 0x00;
+        } 
+        }
         driverState.dir_table_buf.table[entryRow].user_attribute = 0;
         driverState.dir_table_buf.table[entryRow].attribute = 0;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
@@ -369,9 +376,15 @@ int8_t delete(struct FAT32DriverRequest request) {
         // if directory not empty, return with error code 2
         if (!empty) { return 2;}
 
-        // delete entry by removing its flag, and write it to parent cluster
-        driverState.dir_table_buf.table[entryRow].user_attribute = 0x00;
-        driverState.dir_table_buf.table[entryRow].attribute = 0x00;
+        // delete entry by removing its signature, and write it to parent cluster
+        for (int i = 0; i < 8; i++) {
+        driverState.dir_table_buf.table[entryRow].name[i] = 0x00;
+        if (i < 3) {
+            driverState.dir_table_buf.table[entryRow].ext[i] = 0x00;
+        } 
+        }
+        driverState.dir_table_buf.table[entryRow].user_attribute = 0;
+        driverState.dir_table_buf.table[entryRow].attribute = 0;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
         // delete the directory itself, write it to directory cluster
