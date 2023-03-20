@@ -1,7 +1,6 @@
-#include "../std/stdtype.h"
+#include "std/stdtype.h"
+#include "std/stdmem.h"
 #include "fat32.h"
-#include "../std/stdmem.h"
-
 /*-----------------------------------------------------------------------------------*/
 /*-------------------------------------CONSTANT--------------------------------------*/
 
@@ -22,22 +21,18 @@ struct FAT32DriverState driverState;
 /*-----------------------------------------------------------------------------------*/
 /*-------------------------------------HELPER----------------------------------------*/
 
-/* return the logical block address where cluster start */
 uint32_t cluster_to_lba(uint32_t cluster) {
     return cluster * CLUSTER_BLOCK_COUNT;
 }
 
-/* write the the content of ptr to cluster from cluster_number to cluster_number+cluster_count */
 void write_clusters(const void *ptr, uint32_t cluster_number, uint8_t cluster_count) {
     write_blocks(ptr, cluster_to_lba(cluster_number), CLUSTER_BLOCK_COUNT*cluster_count);
 }
 
-/* read and put the content of cluster from cluster_number to cluster_number+cluster_count into ptr */
 void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count) {
     read_blocks(ptr, cluster_to_lba(cluster_number), CLUSTER_BLOCK_COUNT*cluster_count);
 }
 
-/* put the first entry of this directory table with the directory name and its parent cluster number */
 void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uint32_t parent_dir_cluster) {
     // create new entry of directory table, cluster number refer to the parent of this directory
     struct FAT32DirectoryEntry dirEntry = {
@@ -56,7 +51,6 @@ void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uin
 /*-----------------------------------------------------------------------------------*/
 /*-----------------------------------INITIALIZER-------------------------------------*/
 
-/* check if current storage is empty (do not have the filesystem signature) */
 bool is_empty_storage(void) {
     // initiate buffer to contain boot sector content
     uint8_t temp[BLOCK_SIZE];
@@ -68,7 +62,6 @@ bool is_empty_storage(void) {
     return memcmp(fs_signature, temp, BLOCK_SIZE) != 0;
 }
 
-/* create new file system if storage is empty */
 void create_fat32(void) {
     // write the file system signature to the boot sector (cluster 0)
     write_blocks(fs_signature, BOOT_SECTOR, 1);
@@ -95,7 +88,6 @@ void create_fat32(void) {
     write_clusters(rootDir.table, 2, 1);
 }
 
-/* initialize file system */
 void initialize_filesystem_fat32(void) {
     // if storage empty then create new file system
     // else load the FAT to driverState
@@ -138,7 +130,116 @@ int8_t read(struct FAT32DriverRequest request);
  * @param request All attribute will be used for write, buffer_size == 0 then create a folder / directory
  * @return Error code: 0 success - 1 file/folder already exist - 2 invalid parent cluster - -1 unknown
  */
-int8_t write(struct FAT32DriverRequest request);
+int8_t write(struct FAT32DriverRequest request) {
+    // read entries of directory from the parent cluster
+    read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+    // if parent cluster is not a directory, return with error code 2
+    if (driverState.dir_table_buf.table[0].attribute != ATTR_SUBDIRECTORY) { return 2;}
+
+    // initialize value needed for subsequent checking
+    int totalEntry = 1;
+    bool valid = 1;
+
+    // check the total entry in the directory and if there is entry with same name and extension
+    while (totalEntry <= 64 && driverState.dir_table_buf.table[totalEntry-1].user_attribute == UATTR_NOT_EMPTY && valid) {
+        if (memcmp(driverState.dir_table_buf.table[totalEntry-1].name, request.name, 8) == 0 && 
+            memcmp(driverState.dir_table_buf.table[totalEntry-1].ext, request.ext, 3) == 0) {
+            valid = 0;
+        }
+        else {
+            totalEntry++;
+        }
+    }
+
+    // if there is entry with same name and extension, return with error code 1
+    if (!valid) { return 1;}
+
+    // if the total entry is 64 (directory is full), return with error code -1
+    if (totalEntry == 64) { return -1; }
+
+    // if the request buffer size is 0, then create a subdirectory, else write the file 
+    if (request.buffer_size == 0) {
+        // find empty cluster in fat table
+        uint32_t clusterNumber = 0x0;
+        while (driverState.fat_table.cluster_map[clusterNumber] != 0x0 && clusterNumber < 0x800) {
+            clusterNumber++;
+        }
+
+        // if there is no cluster that can be allocated, return with error code -1
+        if (clusterNumber == 0x800) { return -1; }
+
+        // update the FAT table and write it to FAT cluster
+        driverState.fat_table.cluster_map[clusterNumber] = FAT32_FAT_END_OF_FILE;
+        write_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
+
+        // update parent directory table and write it to parent cluster
+        struct FAT32DirectoryEntry dirEntry = {
+            .name = {request.name[0], request.name[1], request.name[2], request.name[3], request.name[4], request.name[5], request.name[6], request.name[7]},
+            .attribute = ATTR_SUBDIRECTORY,
+            .user_attribute = UATTR_NOT_EMPTY,
+            .cluster_high = clusterNumber >> 16,
+            .cluster_low = clusterNumber,
+            .filesize = request.buffer_size
+        };
+        driverState.dir_table_buf.table[totalEntry] = dirEntry;
+        write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+        // create directory table for new directory and write it to directory cluster
+        read_clusters(driverState.dir_table_buf.table, clusterNumber, 1);
+        dirEntry.cluster_high = request.parent_cluster_number >> 16;
+        dirEntry.cluster_low = request.parent_cluster_number;
+        driverState.dir_table_buf.table[0] = dirEntry;
+        write_clusters(driverState.dir_table_buf.table, clusterNumber, 1);
+    }
+    else {
+        // determine number of cluster needed
+        int modulo = request.buffer_size % CLUSTER_SIZE;
+        int clusterNeeded = request.buffer_size / CLUSTER_SIZE;
+        if (modulo != 0) { clusterNeeded++; } 
+
+        // get all cluster_number that is still empty
+        int clusterAvailable = 0;
+        uint32_t currClusterNumber = 0x0;
+        uint32_t clusterNumber[clusterNeeded];
+        while (clusterAvailable < clusterNeeded && currClusterNumber != 0x800) {
+            if (driverState.fat_table.cluster_map[currClusterNumber] == 0x0) {
+                clusterNumber[clusterAvailable] = currClusterNumber;
+                clusterAvailable++;
+            }
+            currClusterNumber++;
+        }
+
+        // if there is not enough cluster to contain the file, return with error code -1
+        if (clusterAvailable != clusterNeeded) { return -1;}
+        
+        // update the FAT table and write it to FAT cluster
+        for (int i = 0; i < clusterNeeded-1; i++) {
+            driverState.fat_table.cluster_map[clusterNumber[i]] = clusterNumber[i+1];
+        }
+        driverState.fat_table.cluster_map[clusterNumber[clusterNeeded-1]] = FAT32_FAT_END_OF_FILE;
+        write_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
+
+        // update parent directory table and write it to parent cluster
+        struct FAT32DirectoryEntry dirEntry = {
+            .name = {request.name[0], request.name[1], request.name[2], request.name[3], request.name[4], request.name[5], request.name[6], request.name[7]},
+            .ext = {request.ext[0], request.ext[1], request.ext[2]},
+            .user_attribute = UATTR_NOT_EMPTY,
+            .cluster_high = clusterNumber[0] >> 16,
+            .cluster_low = clusterNumber[0],
+            .filesize = request.buffer_size
+        };
+        driverState.dir_table_buf.table[totalEntry] = dirEntry;
+        write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+        // write the file to all of the cluster selected
+        for (int i = 0; i < clusterNeeded; i++) {
+            write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*i, clusterNumber[i], 1);
+        }
+    }
+
+    return 0;
+}
 
 
 /**
