@@ -150,10 +150,13 @@ int8_t write(struct FAT32DriverRequest request) {
             entryRow = entryChecked-1;
         }
         if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 && 
-            memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0) {
+            memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0 &&
+            driverState.dir_table_buf.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
             valid = 0;
         }
-        entryChecked++;
+        else {
+            entryChecked++;
+        }
     }
 
     // if there is entry with same name and extension, return with error code 1
@@ -252,4 +255,90 @@ int8_t write(struct FAT32DriverRequest request) {
  * @param request buf and buffer_size is unused
  * @return Error code: 0 success - 1 not found - 2 folder is not empty - -1 unknown
  */
-int8_t delete(struct FAT32DriverRequest request);
+int8_t delete(struct FAT32DriverRequest request) {
+    // read entries of directory from the parent cluster
+    read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+    // check if name and extension to delete is valid
+    int entryRow = 0;
+    int entryChecked = 2;
+    bool found = 0;
+    bool isDirectory = 0;
+    uint32_t clusterNumber;
+
+    while (entryChecked <= 64 && !found) {
+        if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 &&
+            memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0 &&
+            driverState.dir_table_buf.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
+            found = 1;
+            entryRow = entryChecked-1;
+            clusterNumber = ((uint32_t) driverState.dir_table_buf.table[entryChecked-1].cluster_high) << 16;
+            clusterNumber |= (uint32_t) driverState.dir_table_buf.table[entryChecked-1].cluster_low;
+            if (driverState.dir_table_buf.table[entryChecked-1].attribute == ATTR_SUBDIRECTORY) {
+                isDirectory = 1;
+            }
+        }
+        else {
+            entryChecked++;
+        }
+    }
+
+    // if file / folder to delete not found, return with error code 1
+    if (!found) { return 1; }
+
+    // if the entry is a file, delete it. if the entry is a directory, check if it was empty
+    if (!isDirectory) {
+        // delete entry by removing its flag, and write it to parent cluster
+        driverState.dir_table_buf.table[entryRow].user_attribute = 0;
+        driverState.dir_table_buf.table[entryRow].attribute = 0;
+        write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+        // delete file and all its cluster from the FAT table, and write it to FAT table
+        uint32_t currClusterNumber = clusterNumber;
+        uint32_t prevClusterNumber = 0;
+        while (driverState.fat_table.cluster_map[currClusterNumber] != FAT32_FAT_END_OF_FILE) {
+            prevClusterNumber = currClusterNumber;
+            currClusterNumber = driverState.fat_table.cluster_map[currClusterNumber];
+            driverState.fat_table.cluster_map[prevClusterNumber] = 0;
+        }
+        driverState.fat_table.cluster_map[currClusterNumber] = 0;
+        write_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
+    }
+    else {
+        // load the directory table of directory to delete
+        struct FAT32DirectoryTable tempDir;
+        write_clusters(tempDir.table, clusterNumber, 1);
+
+        // check if the directory is empty
+        bool empty = 1;
+        entryChecked = 2;
+
+        while (entryChecked <= 64 && empty) {
+            if (tempDir.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
+                empty = 0;
+            }
+            else {
+                entryChecked++;
+            }
+        }
+
+        // if directory not empty, return with error code 2
+        if (!empty) { return 2;}
+
+        // delete entry by removing its flag, and write it to parent cluster
+        driverState.dir_table_buf.table[entryRow].user_attribute = 0x00;
+        driverState.dir_table_buf.table[entryRow].attribute = 0x00;
+        write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+        // delete the directory itself, write it to directory cluster
+        tempDir.table[0].user_attribute = 0;
+        tempDir.table[0].attribute = 0;
+        write_clusters(tempDir.table, clusterNumber, 1);
+
+        // delete directory in FAT table, and write it to FAT cluster
+        driverState.fat_table.cluster_map[clusterNumber] = 0;
+        write_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
+    }
+
+    return 0;
+}
