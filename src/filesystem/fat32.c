@@ -138,25 +138,29 @@ int8_t write(struct FAT32DriverRequest request) {
     if (driverState.dir_table_buf.table[0].attribute != ATTR_SUBDIRECTORY) { return 2;}
 
     // initialize value needed for subsequent checking
-    int totalEntry = 1;
+    int entryRow = 0;
+    int entryChecked = 1;
     bool valid = 1;
+    bool full = 1;
 
     // check the total entry in the directory and if there is entry with same name and extension
-    while (totalEntry <= 64 && driverState.dir_table_buf.table[totalEntry-1].user_attribute == UATTR_NOT_EMPTY && valid) {
-        if (memcmp(driverState.dir_table_buf.table[totalEntry-1].name, request.name, 8) == 0 && 
-            memcmp(driverState.dir_table_buf.table[totalEntry-1].ext, request.ext, 3) == 0) {
+    while (entryChecked <= 64 && valid) {
+        if (driverState.dir_table_buf.table[entryChecked-1].user_attribute != UATTR_NOT_EMPTY && full) {
+            full = 0;
+            entryRow = entryChecked-1;
+        }
+        if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 && 
+            memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0) {
             valid = 0;
         }
-        else {
-            totalEntry++;
-        }
+        entryChecked++;
     }
 
     // if there is entry with same name and extension, return with error code 1
     if (!valid) { return 1;}
 
-    // if the total entry is 64 (directory is full), return with error code -1
-    if (totalEntry == 64) { return -1; }
+    // if the directory is full, return with error code -1
+    if (full) { return -1; }
 
     // if the request buffer size is 0, then create a subdirectory, else write the file 
     if (request.buffer_size == 0) {
@@ -182,7 +186,7 @@ int8_t write(struct FAT32DriverRequest request) {
             .cluster_low = clusterNumber,
             .filesize = request.buffer_size
         };
-        driverState.dir_table_buf.table[totalEntry] = dirEntry;
+        driverState.dir_table_buf.table[entryRow] = dirEntry;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
         // create directory table for new directory and write it to directory cluster
@@ -229,7 +233,7 @@ int8_t write(struct FAT32DriverRequest request) {
             .cluster_low = clusterNumber[0],
             .filesize = request.buffer_size
         };
-        driverState.dir_table_buf.table[totalEntry] = dirEntry;
+        driverState.dir_table_buf.table[entryRow] = dirEntry;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
         // write the file to all of the cluster selected
