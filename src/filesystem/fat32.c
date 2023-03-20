@@ -112,7 +112,22 @@ void initialize_filesystem_fat32(void) {
  *                buffer_size must be exactly sizeof(struct FAT32DirectoryTable)
  * @return Error code: 0 success - 1 not a folder - 2 not found - -1 unknown
  */
-int8_t read_directory(struct FAT32DriverRequest request);
+int8_t read_directory(struct FAT32DriverRequest request) {
+    // Read directory table from parent cluster
+    read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+    // Search for directory with the same name
+    for (int i=0; i<(int)(sizeof(driverState.dir_table_buf)/sizeof(struct FAT32DirectoryEntry)); i++) {
+        if (memcmp(driverState.dir_table_buf.table[i].name, request.name, 8) == 0) { // Check name of directory with request
+            if (driverState.dir_table_buf.table[i].attribute != ATTR_SUBDIRECTORY) { // Not a directory
+                return 1;
+            } else {
+                read_clusters(request.buf, ((driverState.dir_table_buf.table[i].cluster_high << 16) + driverState.dir_table_buf.table[i].cluster_low),1);
+                return 0;
+            }
+        }
+    }
+    return 2;
+}
 
 
 /**
@@ -121,7 +136,36 @@ int8_t read_directory(struct FAT32DriverRequest request);
  * @param request All attribute will be used for read, buffer_size will limit reading count
  * @return Error code: 0 success - 1 not a file - 2 not enough buffer - 3 not found - -1 unknown
  */
-int8_t read(struct FAT32DriverRequest request);
+int8_t read(struct FAT32DriverRequest request) {
+    // Read directory table from parent cluster
+    read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+    // Read FAT table
+    read_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
+    // Search for directory with the same name
+    for (int i=0; i<(int)(sizeof(driverState.dir_table_buf)/sizeof(struct FAT32DirectoryEntry)); i++) {
+        if (memcmp(driverState.dir_table_buf.table[i].name, request.name, 8) == 0 &&
+            memcmp(driverState.dir_table_buf.table[i].ext, request.ext, 3) == 0) { // Check name of directory with request
+            if (driverState.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY) { // Not a file
+                return 1;
+            }
+            else if (request.buffer_size < driverState.dir_table_buf.table[i].filesize) { // Buffer size not enough
+                return 2;
+            } 
+            else {
+                int counter=0;
+                int cluster_num = (driverState.dir_table_buf.table[i].cluster_high << 16) + driverState.dir_table_buf.table[i].cluster_low;
+                while(cluster_num != FAT32_FAT_END_OF_FILE) {
+                    read_clusters(request.buf + CLUSTER_SIZE*counter, cluster_num, 1);
+                    counter++;
+                    cluster_num = driverState.fat_table.cluster_map[cluster_num];
+                }
+                return 0;
+            }
+        }
+    }
+    // Not found
+    return 3;
+}
 
 
 /**
