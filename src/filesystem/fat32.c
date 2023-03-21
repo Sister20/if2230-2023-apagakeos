@@ -179,7 +179,8 @@ int8_t write(struct FAT32DriverRequest request) {
     read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
     // if parent cluster is not a directory, return with error code 2
-    if (driverState.dir_table_buf.table[0].attribute != ATTR_SUBDIRECTORY) { return 2;}
+    if (!(driverState.dir_table_buf.table[0].user_attribute == UATTR_NOT_EMPTY &&
+          driverState.dir_table_buf.table[0].attribute == ATTR_SUBDIRECTORY)) { return 2;}
 
     // initialize value needed for subsequent checking
     int entryRow = 0;
@@ -304,6 +305,10 @@ int8_t delete(struct FAT32DriverRequest request) {
     // read entries of directory from the parent cluster
     read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
+    // if parent is not a directory, return with error code -1
+    if (!(driverState.dir_table_buf.table[0].user_attribute == UATTR_NOT_EMPTY &&
+          driverState.dir_table_buf.table[0].attribute == ATTR_SUBDIRECTORY)) { return -1;}
+
     // check if name and extension to delete is valid
     int entryRow = 0;
     int entryChecked = 2;
@@ -335,16 +340,16 @@ int8_t delete(struct FAT32DriverRequest request) {
     if (!isDirectory) {
         // delete entry by removing its signature, and write it to parent cluster
         for (int i = 0; i < 8; i++) {
-        driverState.dir_table_buf.table[entryRow].name[i] = 0x00;
-        if (i < 3) {
-            driverState.dir_table_buf.table[entryRow].ext[i] = 0x00;
-        } 
+            driverState.dir_table_buf.table[entryRow].name[i] = 0;
+            if (i < 3) {
+                driverState.dir_table_buf.table[entryRow].ext[i] = 0;
+            } 
         }
         driverState.dir_table_buf.table[entryRow].user_attribute = 0;
         driverState.dir_table_buf.table[entryRow].attribute = 0;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
-        // delete file and all its cluster from the FAT table, and write it to FAT table
+        // delete file and all its cluster from the FAT table, and write it to FAT table cluster
         uint32_t currClusterNumber = clusterNumber;
         uint32_t prevClusterNumber = 0;
         while (driverState.fat_table.cluster_map[currClusterNumber] != FAT32_FAT_END_OF_FILE) {
@@ -378,16 +383,22 @@ int8_t delete(struct FAT32DriverRequest request) {
 
         // delete entry by removing its signature, and write it to parent cluster
         for (int i = 0; i < 8; i++) {
-        driverState.dir_table_buf.table[entryRow].name[i] = 0x00;
-        if (i < 3) {
-            driverState.dir_table_buf.table[entryRow].ext[i] = 0x00;
-        } 
+            driverState.dir_table_buf.table[entryRow].name[i] = 0;
+            if (i < 3) {
+                driverState.dir_table_buf.table[entryRow].ext[i] = 0;
+            } 
         }
         driverState.dir_table_buf.table[entryRow].user_attribute = 0;
         driverState.dir_table_buf.table[entryRow].attribute = 0;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
         // delete the directory itself, write it to directory cluster
+        for (int i = 0; i < 8; i++) {
+            tempDir.table[0].name[i] = 0;
+            if (i < 3) {
+                tempDir.table[0].ext[i] = 0;
+            } 
+        }
         tempDir.table[0].user_attribute = 0;
         tempDir.table[0].attribute = 0;
         write_clusters(tempDir.table, clusterNumber, 1);
