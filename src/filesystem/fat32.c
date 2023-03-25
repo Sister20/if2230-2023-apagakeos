@@ -251,26 +251,47 @@ int8_t write(struct FAT32DriverRequest request) {
         int clusterNeeded = request.buffer_size / CLUSTER_SIZE;
         if (modulo != 0) { clusterNeeded++; } 
 
-        // get all cluster_number that is still empty
+        // get the first cluster number that is empty
         int clusterAvailable = 0;
-        uint32_t currClusterNumber = 0x0;
-        uint32_t clusterNumber[clusterNeeded];
-        while (clusterAvailable < clusterNeeded && currClusterNumber != 0x800) {
+        int firstClusterFound = 0;
+        uint32_t startClusterNumber = 0x0;
+        while (startClusterNumber != 0x800 && !firstClusterFound) {
+            if (driverState.fat_table.cluster_map[startClusterNumber] == 0x0) {
+                clusterAvailable++;
+                firstClusterFound = 1;
+            }
+            else {
+                startClusterNumber++;
+            }
+        }
+
+        // get the rest of cluster number
+        uint32_t prevClusterNumber = startClusterNumber;
+        uint32_t currClusterNumber = startClusterNumber + 1;
+        while (currClusterNumber < 0x800 && clusterAvailable < clusterNeeded) {
             if (driverState.fat_table.cluster_map[currClusterNumber] == 0x0) {
-                clusterNumber[clusterAvailable] = currClusterNumber;
+                driverState.fat_table.cluster_map[prevClusterNumber] = currClusterNumber;
+                prevClusterNumber = currClusterNumber;
                 clusterAvailable++;
             }
             currClusterNumber++;
         }
 
-        // if there is not enough cluster to contain the file, return with error code -1
-        if (clusterAvailable != clusterNeeded) { return -1;}
-        
-        // update the FAT table and write it to FAT cluster
-        for (int i = 0; i < clusterNeeded-1; i++) {
-            driverState.fat_table.cluster_map[clusterNumber[i]] = clusterNumber[i+1];
+        // if there is not enough cluster to contain the file, reset the fat table and return with error code -1
+        if (clusterAvailable != clusterNeeded) { 
+            uint32_t tempClusterNumber;
+            while (driverState.fat_table.cluster_map[startClusterNumber] != 0x0) {
+                tempClusterNumber = driverState.fat_table.cluster_map[startClusterNumber];
+                driverState.fat_table.cluster_map[startClusterNumber] = 0x0;
+                startClusterNumber = tempClusterNumber;
+            }
+            return -1;
         }
-        driverState.fat_table.cluster_map[clusterNumber[clusterNeeded-1]] = FAT32_FAT_END_OF_FILE;
+        else {
+            driverState.fat_table.cluster_map[prevClusterNumber] = FAT32_FAT_END_OF_FILE;
+        }
+        
+        // write the FAT table to FAT cluster
         write_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
 
         // update parent directory table and write it to parent cluster
@@ -278,17 +299,21 @@ int8_t write(struct FAT32DriverRequest request) {
             .name = {request.name[0], request.name[1], request.name[2], request.name[3], request.name[4], request.name[5], request.name[6], request.name[7]},
             .ext = {request.ext[0], request.ext[1], request.ext[2]},
             .user_attribute = UATTR_NOT_EMPTY,
-            .cluster_high = clusterNumber[0] >> 16,
-            .cluster_low = clusterNumber[0],
+            .cluster_high = startClusterNumber >> 16,
+            .cluster_low = startClusterNumber,
             .filesize = request.buffer_size
         };
         driverState.dir_table_buf.table[entryRow] = dirEntry;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
         // write the file to all of the cluster selected
-        for (int i = 0; i < clusterNeeded; i++) {
-            write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*i, clusterNumber[i], 1);
+        int i = 0;
+        while (driverState.fat_table.cluster_map[startClusterNumber] != FAT32_FAT_END_OF_FILE) {
+            write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*i, startClusterNumber, 1);
+            startClusterNumber = driverState.fat_table.cluster_map[startClusterNumber];
+            i++;
         }
+        write_clusters((uint8_t*) request.buf + CLUSTER_SIZE*i, startClusterNumber, 1);
     }
 
     return 0;
