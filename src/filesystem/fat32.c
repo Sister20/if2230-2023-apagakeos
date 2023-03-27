@@ -139,6 +139,9 @@ int8_t read_directory(struct FAT32DriverRequest request) {
 int8_t read(struct FAT32DriverRequest request) {
     // Read directory table from parent cluster
     read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+    if(driverState.dir_table_buf.table->user_attribute != UATTR_NOT_EMPTY) { // direktori kosong
+        return -1;
+    }
     // Read FAT table
     read_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
     // Search for directory with the same name
