@@ -40,14 +40,14 @@ void kernel_setup(void) {
         .buffer_size           = 0,
     } ;
 
-    // struct ClusterBuffer cbuf3[5];
-    // struct FAT32DriverRequest request3 = {
-    //     .buf                   = cbuf3,
-    //     .name                  = "hahahaha",
-    //     .ext                   = "uwu",
-    //     .parent_cluster_number = 4,
-    //     .buffer_size           = 0,
-    // } ;
+    struct ClusterBuffer cbuf3[5];
+    struct FAT32DriverRequest request3 = {
+        .buf                   = cbuf3,
+        .name                  = "hahahaha",
+        .ext                   = "uwu",
+        .parent_cluster_number = 4,
+        .buffer_size           = 0,
+    } ;
 
     write(request);  // Create folder "ikanaide"
     memcpy(request.name, "kano1\0\0\0", 8);
@@ -59,11 +59,9 @@ void kernel_setup(void) {
     request.buffer_size = 5*CLUSTER_SIZE;
     write(request);  // Create fragmented file "daijoubu"
 
-    // uint32_t kano1addr = 4;
-    // uint32_t* kano1addrPointer = &kano1addr;
-    // memcpy(request.name, "hahahaha", 8);
-    // memcpy(request.parent_cluster_number, kano1addrPointer, 4);
-    // write(request);  // Create fragmented file "hahahaha"
+    memcpy(request.name, "hahahaha", 8);
+    request.parent_cluster_number = 4;
+    write(request);  // Create fragmented file "hahahaha" inside kano1 folder
 
     struct ClusterBuffer readcbuf;
     read_clusters(&readcbuf, ROOT_CLUSTER_NUMBER+1, 1); 
@@ -76,8 +74,8 @@ void kernel_setup(void) {
     read_directory(request2); // Failed directory read (not a folder)
     memcpy(request2.name, "kano1\0\0\0", 8);
     read_directory(request2); // Success directory read kano1
-    // request3.buffer_size = 5*CLUSTER_SIZE;
-    // read(request3);   // Success read on file "daijoubu"
+    request3.buffer_size = 5*CLUSTER_SIZE;
+    read(request3);   // Success read on file "daijoubu"
 
     while (TRUE)
         keyboard_state_activate();
