@@ -17,7 +17,6 @@ void kernel_setup(void) {
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
     initialize_filesystem_fat32();
-    keyboard_state_activate();
 
     struct ClusterBuffer cbuf[5];
     for (uint32_t i = 0; i < 5; i++)
@@ -52,6 +51,7 @@ void kernel_setup(void) {
     read(request);   // Success read on file "daijoubu"
 
     __asm__("int $0x4");
-    while (TRUE);
+    while (TRUE)
+        keyboard_state_activate();
 }
 
