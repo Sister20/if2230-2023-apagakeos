@@ -217,7 +217,7 @@ int8_t write(struct FAT32DriverRequest request) {
     if (request.buffer_size == 0) {
         // find empty cluster in fat table
         uint32_t clusterNumber = 0x0;
-        while (driverState.fat_table.cluster_map[clusterNumber] != 0x0 && clusterNumber < 0x800) {
+        while (driverState.fat_table.cluster_map[clusterNumber] != FAT32_FAT_EMPTY_ENTRY && clusterNumber < 0x800) {
             clusterNumber++;
         }
 
@@ -259,7 +259,7 @@ int8_t write(struct FAT32DriverRequest request) {
         int firstClusterFound = 0;
         uint32_t startClusterNumber = 0x0;
         while (startClusterNumber != 0x800 && !firstClusterFound) {
-            if (driverState.fat_table.cluster_map[startClusterNumber] == 0x0) {
+            if (driverState.fat_table.cluster_map[startClusterNumber] == FAT32_FAT_EMPTY_ENTRY) {
                 clusterAvailable++;
                 firstClusterFound = 1;
             }
@@ -272,7 +272,7 @@ int8_t write(struct FAT32DriverRequest request) {
         uint32_t prevClusterNumber = startClusterNumber;
         uint32_t currClusterNumber = startClusterNumber + 1;
         while (currClusterNumber < 0x800 && clusterAvailable < clusterNeeded) {
-            if (driverState.fat_table.cluster_map[currClusterNumber] == 0x0) {
+            if (driverState.fat_table.cluster_map[currClusterNumber] == FAT32_FAT_EMPTY_ENTRY) {
                 driverState.fat_table.cluster_map[prevClusterNumber] = currClusterNumber;
                 prevClusterNumber = currClusterNumber;
                 clusterAvailable++;
@@ -283,9 +283,9 @@ int8_t write(struct FAT32DriverRequest request) {
         // if there is not enough cluster to contain the file, reset the fat table and return with error code -1
         if (clusterAvailable != clusterNeeded) { 
             uint32_t tempClusterNumber;
-            while (driverState.fat_table.cluster_map[startClusterNumber] != 0x0) {
+            while (driverState.fat_table.cluster_map[startClusterNumber] != FAT32_FAT_EMPTY_ENTRY) {
                 tempClusterNumber = driverState.fat_table.cluster_map[startClusterNumber];
-                driverState.fat_table.cluster_map[startClusterNumber] = 0x0;
+                driverState.fat_table.cluster_map[startClusterNumber] = FAT32_FAT_EMPTY_ENTRY;
                 startClusterNumber = tempClusterNumber;
             }
             return -1;
@@ -373,8 +373,8 @@ int8_t delete(struct FAT32DriverRequest request) {
                 driverState.dir_table_buf.table[entryRow].ext[i] = 0;
             } 
         }
-        driverState.dir_table_buf.table[entryRow].user_attribute = 0;
-        driverState.dir_table_buf.table[entryRow].attribute = 0;
+        driverState.dir_table_buf.table[entryRow].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+        driverState.dir_table_buf.table[entryRow].attribute = FAT32_FAT_EMPTY_ENTRY;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
         // delete file and all its cluster from the FAT table, and write it to FAT table cluster
@@ -383,7 +383,7 @@ int8_t delete(struct FAT32DriverRequest request) {
         while (driverState.fat_table.cluster_map[currClusterNumber] != FAT32_FAT_END_OF_FILE) {
             prevClusterNumber = currClusterNumber;
             currClusterNumber = driverState.fat_table.cluster_map[currClusterNumber];
-            driverState.fat_table.cluster_map[prevClusterNumber] = 0;
+            driverState.fat_table.cluster_map[prevClusterNumber] = FAT32_FAT_EMPTY_ENTRY;
         }
         driverState.fat_table.cluster_map[currClusterNumber] = 0;
         write_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
@@ -416,8 +416,8 @@ int8_t delete(struct FAT32DriverRequest request) {
                 driverState.dir_table_buf.table[entryRow].ext[i] = 0;
             } 
         }
-        driverState.dir_table_buf.table[entryRow].user_attribute = 0;
-        driverState.dir_table_buf.table[entryRow].attribute = 0;
+        driverState.dir_table_buf.table[entryRow].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+        driverState.dir_table_buf.table[entryRow].attribute = FAT32_FAT_EMPTY_ENTRY;
         write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
         // delete the directory itself, write it to directory cluster
@@ -427,12 +427,12 @@ int8_t delete(struct FAT32DriverRequest request) {
                 tempDir.table[0].ext[i] = 0;
             } 
         }
-        tempDir.table[0].user_attribute = 0;
-        tempDir.table[0].attribute = 0;
+        tempDir.table[0].user_attribute = FAT32_FAT_EMPTY_ENTRY;
+        tempDir.table[0].attribute = FAT32_FAT_EMPTY_ENTRY;
         write_clusters(tempDir.table, clusterNumber, 1);
 
         // delete directory in FAT table, and write it to FAT cluster
-        driverState.fat_table.cluster_map[clusterNumber] = 0;
+        driverState.fat_table.cluster_map[clusterNumber] = FAT32_FAT_EMPTY_ENTRY;
         write_clusters(driverState.fat_table.cluster_map, FAT_CLUSTER_NUMBER, 1);
     }
 
