@@ -4,11 +4,14 @@
 #include "std/stdmem.h"
 #include "interrupt/interrupt.h"
 
+// Global variable declarations
 struct KeyboardDriverState keyboard_state;
 
+// Declare 2 static variables to determine rows and cols
 static int keyboard_buffer_write_pos = 0;
 static int keyboard_buffer_read_pos = 0;
 
+// Character list of elements
 const char keyboard_scancode_1_to_ascii_map[256] = {
       0, 0x1B, '1', '2', '3', '4', '5', '6',  '7', '8', '9',  '0',  '-', '=', '\b', '\t',
     'q',  'w', 'e', 'r', 't', 'y', 'u', 'i',  'o', 'p', '[',  ']', '\n',   0,  'a',  's',
@@ -70,15 +73,15 @@ void keyboard_isr(void) {
         if (mapped_char == '\b' && keyboard_state.buffer_index > 0) {
             keyboard_state.buffer_index--;
             keyboard_buffer_write_pos--;
-            framebuffer_write(keyboard_buffer_read_pos , keyboard_buffer_write_pos, ' ', 0x0, 0x0);
+            framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, ' ', 0x0, 0x0);
             framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
         } else if (mapped_char == '\b' && keyboard_state.buffer_index == 0) {
-            framebuffer_write(keyboard_buffer_read_pos , keyboard_buffer_write_pos, ' ', 0x0, 0x0);
+            framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, ' ', 0x0, 0x0);
             framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
         } else if (mapped_char != 0 && keyboard_state.buffer_index < KEYBOARD_BUFFER_SIZE-1) {
             keyboard_state.keyboard_buffer[keyboard_state.buffer_index] = mapped_char;
             keyboard_state.buffer_index++;
-            framebuffer_write(keyboard_buffer_read_pos , keyboard_buffer_write_pos, mapped_char, 0xF, 0x0);
+            framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, mapped_char, 0xF, 0x0);
             keyboard_buffer_write_pos++;
             framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
         }
@@ -87,11 +90,10 @@ void keyboard_isr(void) {
             keyboard_state.keyboard_buffer[keyboard_state.buffer_index] = '\0';
             keyboard_state.buffer_index = 0;
             keyboard_buffer_write_pos--;
-            framebuffer_write(keyboard_buffer_read_pos , keyboard_buffer_write_pos, ' ', 0x0, 0x0);
+            framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, ' ', 0x0, 0x0);
             keyboard_buffer_read_pos++;
             keyboard_buffer_write_pos = 0;
-            framebuffer_write(keyboard_buffer_read_pos , 0, ' ', 0x0, 0x0);
-            framebuffer_set_cursor(keyboard_buffer_read_pos, 0);
+            framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
         }
     }
     pic_ack(IRQ_KEYBOARD);

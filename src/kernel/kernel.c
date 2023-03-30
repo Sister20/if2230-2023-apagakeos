@@ -50,8 +50,8 @@ void kernel_setup(void) {
     request.buffer_size = 5*CLUSTER_SIZE;
     read(request);   // Success read on file "daijoubu"
 
-    __asm__("int $0x4");
+    __asm__("int $0x4");  // Acces to interrupt 0x4
     while (TRUE)
-        keyboard_state_activate();
+        keyboard_state_activate();  // Activate keyboard condition
 }
 

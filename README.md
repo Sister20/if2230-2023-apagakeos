@@ -34,6 +34,7 @@ Waktu implementasi : Jumat, 3 Maret 2023 - Kamis, 30 Maret 2023
 2. Keyboard driver
 3. Disk driver
 4. File System FAT32
+5. [BONUS] Dukungan CMOS time untuk file system
 
 ### Milestone 3 - TBA
 Waktu implementasi : Soon
