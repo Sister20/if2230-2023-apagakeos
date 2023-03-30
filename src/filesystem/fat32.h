@@ -2,6 +2,7 @@
 #define _FAT32_H
 
 #include "disk.h"
+#include "cmos.h"
 #include "std/stdtype.h"
 
 /**
@@ -54,6 +55,7 @@ struct FAT32FileAllocationTable {
 /**
  * FAT32 standard 8.3 format - 32 bytes DirectoryEntry, Some detail can be found at:
  * https://en.wikipedia.org/wiki/Design_of_the_FAT_file_system#Directory_entry, and click show table.
+ * Attribute related to date and time is following the Real-Time Clock
  *
  * @param name           Entry name
  * @param ext            File extension

@@ -113,19 +113,32 @@ void initialize_filesystem_fat32(void) {
  * @return Error code: 0 success - 1 not a folder - 2 not found - -1 unknown
  */
 int8_t read_directory(struct FAT32DriverRequest request) {
+    // read the time from CMOS
+    read_rtc();
+    
     // Read directory table from parent cluster
     read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+    if (driverState.dir_table_buf.table->user_attribute != UATTR_NOT_EMPTY) { // direktori kosong
+        return -1;
+    }
+
     // Search for directory with the same name
-    for (int i=0; i<(int)(sizeof(driverState.dir_table_buf)/sizeof(struct FAT32DirectoryEntry)); i++) {
+    for (int i = 0; i < (int)(sizeof(driverState.dir_table_buf)/sizeof(struct FAT32DirectoryEntry)); i++) {
         if (memcmp(driverState.dir_table_buf.table[i].name, request.name, 8) == 0) { // Check name of directory with request
             if (driverState.dir_table_buf.table[i].attribute != ATTR_SUBDIRECTORY) { // Not a directory
                 return 1;
             } else {
+                // Change access date
+                driverState.dir_table_buf.table[i].access_date = (((uint16_t) day) << 8) | ((uint16_t) month);
+                write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+                // Read directory
                 read_clusters(request.buf, ((driverState.dir_table_buf.table[i].cluster_high << 16) + driverState.dir_table_buf.table[i].cluster_low),1);
                 return 0;
             }
         }
     }
+    // Folder not found
     return 2;
 }
 
@@ -137,6 +150,9 @@ int8_t read_directory(struct FAT32DriverRequest request) {
  * @return Error code: 0 success - 1 not a file - 2 not enough buffer - 3 not found - -1 unknown
  */
 int8_t read(struct FAT32DriverRequest request) {
+    // read the time from CMOS
+    read_rtc();
+
     // Read directory table from parent cluster
     read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
     if(driverState.dir_table_buf.table->user_attribute != UATTR_NOT_EMPTY) { // direktori kosong
@@ -157,6 +173,12 @@ int8_t read(struct FAT32DriverRequest request) {
             else {
                 int counter=0;
                 int cluster_num = (driverState.dir_table_buf.table[i].cluster_high << 16) + driverState.dir_table_buf.table[i].cluster_low;
+                
+                // Change access date
+                driverState.dir_table_buf.table[i].access_date = (((uint16_t) day) << 8) | ((uint16_t) month);
+                write_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
+
+                // Read until end of file
                 while(cluster_num != FAT32_FAT_END_OF_FILE) {
                     read_clusters(request.buf + CLUSTER_SIZE*counter, cluster_num, 1);
                     counter++;
@@ -166,7 +188,7 @@ int8_t read(struct FAT32DriverRequest request) {
             }
         }
     }
-    // Not found
+    // File not found
     return 3;
 }
 
@@ -178,6 +200,9 @@ int8_t read(struct FAT32DriverRequest request) {
  * @return Error code: 0 success - 1 file/folder already exist - 2 invalid parent cluster - -1 unknown
  */
 int8_t write(struct FAT32DriverRequest request) {
+    // read the time from CMOS
+    read_rtc();
+
     // read entries of directory from the parent cluster
     read_clusters(driverState.dir_table_buf.table, request.parent_cluster_number, 1);
 
@@ -188,19 +213,19 @@ int8_t write(struct FAT32DriverRequest request) {
     // initialize value needed for subsequent checking
     int entryRow = 0;
     int entryChecked = 1;
-    bool valid = 1;
-    bool full = 1;
+    bool valid = TRUE;
+    bool full = TRUE;
 
     // check the total entry in the directory and if there is entry with same name and extension
     while (entryChecked <= 64 && valid) {
         if (driverState.dir_table_buf.table[entryChecked-1].user_attribute != UATTR_NOT_EMPTY && full) {
-            full = 0;
+            full = FALSE;
             entryRow = entryChecked-1;
         }
         if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 && 
             memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0 &&
             driverState.dir_table_buf.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
-            valid = 0;
+            valid = FALSE;
         }
         else {
             entryChecked++;
@@ -235,6 +260,10 @@ int8_t write(struct FAT32DriverRequest request) {
             .attribute = ATTR_SUBDIRECTORY,
             .user_attribute = UATTR_NOT_EMPTY,
             .cluster_high = clusterNumber >> 16,
+            .create_time = (((uint16_t) hour) << 8) | ((uint16_t) minute),
+            .create_date = (((uint16_t) day) << 8) | ((uint16_t) month),
+            .modified_time = (((uint16_t) hour) << 8) | ((uint16_t) minute),
+            .modified_date = (((uint16_t) day) << 8) | ((uint16_t) month),
             .cluster_low = clusterNumber,
             .filesize = request.buffer_size
         };
@@ -256,17 +285,20 @@ int8_t write(struct FAT32DriverRequest request) {
 
         // get the first cluster number that is empty
         int clusterAvailable = 0;
-        int firstClusterFound = 0;
+        bool firstClusterFound = FALSE;
         uint32_t startClusterNumber = 0x0;
         while (startClusterNumber != 0x800 && !firstClusterFound) {
             if (driverState.fat_table.cluster_map[startClusterNumber] == FAT32_FAT_EMPTY_ENTRY) {
                 clusterAvailable++;
-                firstClusterFound = 1;
+                firstClusterFound = TRUE;
             }
             else {
                 startClusterNumber++;
             }
         }
+
+        // if there is no cluster to put the file, return with error code -1
+        if (!firstClusterFound) { return -1;}
 
         // get the rest of cluster number
         uint32_t prevClusterNumber = startClusterNumber;
@@ -303,6 +335,10 @@ int8_t write(struct FAT32DriverRequest request) {
             .ext = {request.ext[0], request.ext[1], request.ext[2]},
             .user_attribute = UATTR_NOT_EMPTY,
             .cluster_high = startClusterNumber >> 16,
+            .create_time = (((uint16_t) hour) << 8) | ((uint16_t) minute),
+            .create_date = (((uint16_t) day) << 8) | ((uint16_t) month),
+            .modified_time = (((uint16_t) hour) << 8) | ((uint16_t) minute),
+            .modified_date = (((uint16_t) day) << 8) | ((uint16_t) month),
             .cluster_low = startClusterNumber,
             .filesize = request.buffer_size
         };
@@ -340,20 +376,20 @@ int8_t delete(struct FAT32DriverRequest request) {
     // check if name and extension to delete is valid
     int entryRow = 0;
     int entryChecked = 2;
-    bool found = 0;
-    bool isDirectory = 0;
+    bool found = FALSE;
+    bool isDirectory = FALSE;
     uint32_t clusterNumber;
 
     while (entryChecked <= 64 && !found) {
         if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 &&
             memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0 &&
             driverState.dir_table_buf.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
-            found = 1;
+            found = TRUE;
             entryRow = entryChecked-1;
             clusterNumber = ((uint32_t) driverState.dir_table_buf.table[entryChecked-1].cluster_high) << 16;
             clusterNumber |= (uint32_t) driverState.dir_table_buf.table[entryChecked-1].cluster_low;
             if (driverState.dir_table_buf.table[entryChecked-1].attribute == ATTR_SUBDIRECTORY) {
-                isDirectory = 1;
+                isDirectory = TRUE;
             }
         }
         else {
@@ -394,12 +430,12 @@ int8_t delete(struct FAT32DriverRequest request) {
         write_clusters(tempDir.table, clusterNumber, 1);
 
         // check if the directory is empty
-        bool empty = 1;
+        bool empty = TRUE;
         entryChecked = 2;
 
         while (entryChecked <= 64 && empty) {
             if (tempDir.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
-                empty = 0;
+                empty = FALSE;
             }
             else {
                 entryChecked++;
