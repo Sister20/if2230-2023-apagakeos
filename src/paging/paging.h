@@ -1,7 +1,7 @@
 #ifndef _PAGING_H
 #define _PAGING_H
 
-#include "stdtype.h"
+#include "std/stdtype.h"
 
 #define PAGE_ENTRY_COUNT 1024
 #define PAGE_FRAME_SIZE  (4*1024*1024)
@@ -9,18 +9,28 @@
 // Operating system page directory, using page size PAGE_FRAME_SIZE (4 MiB)
 extern struct PageDirectory _paging_kernel_page_directory;
 
-
-
-
 /**
  * Page Directory Entry Flag, only first 8 bit
  * 
- * @param present_bit       Indicate whether this entry is exist or not
+ * @param present_bit           Indicate whether this entry is exist or not
+ * @param write_bit             Indicate whether writes may be allowed or not
+ * @param user_supervisor_bit   Indicate whether user-mode accesses may be allowed or not
+ * @param pwt_bit               Indicate the page-level write-through
+ * @param pcd_bit               Indicate the page-level cache disable
+ * @param accessed_bit          Indicate whether the entry has been accessed or not
+ * @param dirty_bit             Indicate whether the entry has been written or not
+ * @param use_pagesize_4_mb     Must be 1, otherwise the entry references to a page table
  * ...
  */
 struct PageDirectoryEntryFlag {
-    uint8_t present_bit        : 1;
-    // TODO : Continue. Note: Only first 8 bit flags
+    uint8_t present_bit         : 1;
+    uint8_t write_bit           : 1;
+    uint8_t user_supervisor_bit : 1;
+    uint8_t pwt_bit             : 1;
+    uint8_t pcd_bit             : 1;
+    uint8_t accessed_bit        : 1;
+    uint8_t dirty_bit           : 1;
+    uint8_t use_pagesize_4_mb   : 1;
 } __attribute__((packed));
 
 /**
@@ -29,12 +39,21 @@ struct PageDirectoryEntryFlag {
  * 
  * @param flag            Contain 8-bit page directory entry flag
  * @param global_page     Is this page translation global (also cannot be flushed)
+ * @param ignored         Ignored part
+ * @param pat_support     Is PAT supported or not
+ * @param higher_address  Bits 39:32 of address
+ * @param reserved        Reserved part
+ * @param lower_address   Bits 31:22 of address
  * ...
  */
 struct PageDirectoryEntry {
     struct PageDirectoryEntryFlag flag;
     uint16_t global_page    : 1;
-    // TODO : Continue, Use uint16_t + bitfield here, Do not use uint8_t
+    uint16_t ignored        : 3;
+    uint16_t pat_support    : 1;
+    uint16_t higher_address : 4;
+    uint16_t reserved       : 5;
+    uint16_t lower_address  : 10;
 } __attribute__((packed));
 
 /**
@@ -47,8 +66,8 @@ struct PageDirectoryEntry {
  * @param table Fixed-width array of PageDirectoryEntry with size PAGE_ENTRY_COUNT
  */
 struct PageDirectory {
-    // TODO : Implement
-} __attribute__((packed));
+    struct PageDirectoryEntry table[PAGE_ENTRY_COUNT];
+} __attribute__((packed, aligned(0x1000)));
 
 /**
  * Containing page driver states
@@ -58,10 +77,6 @@ struct PageDirectory {
 struct PageDriverState {
     uint8_t *last_available_physical_addr;
 } __attribute__((packed));
-
-
-
-
 
 /**
  * update_page_directory,
