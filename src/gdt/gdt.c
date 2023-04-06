@@ -101,10 +101,10 @@ struct GlobalDescriptorTable global_descriptor_table = {
             .base_low          = 0,
             .non_system        = 0,    // S bit
             .type_bit          = 0x9,
-            .dpl_bit         = 0,    // DPL
-            .present         = 1,    // P bit
-            .db_flag        = 1,    // D/B bit
-            .code_in_64bit         = 0,    // L bit
+            .dpl_bit           = 0,    // DPL
+            .present           = 1,    // P bit
+            .db_flag           = 1,    // D/B bit
+            .code_in_64bit     = 0,    // L bit
             .granularity       = 0,    // G bit
         },
         {0}

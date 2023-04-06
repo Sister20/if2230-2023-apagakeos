@@ -21,7 +21,7 @@ static struct PageDriverState page_driver_state = {
     .last_available_physical_addr = (uint8_t*) 0 + PAGE_FRAME_SIZE,
 };
 
-void update_page_directory_entry(void *physical_addr, void *virtual_addr, struct PageDirectoryEntryFlag flag) {
+void update_page_directory(void *physical_addr, void *virtual_addr, struct PageDirectoryEntryFlag flag) {
     uint32_t page_index = ((uint32_t) virtual_addr >> 22) & 0x3FF;
 
     _paging_kernel_page_directory.table[page_index].flag          = flag;
@@ -33,8 +33,18 @@ int8_t allocate_single_user_page_frame(void *virtual_addr) {
     // Using default QEMU config (128 MiB max memory)
     uint32_t last_physical_addr = (uint32_t) page_driver_state.last_available_physical_addr;
 
-    // TODO : Allocate Page Directory Entry with user privilege
-    return -1;
+    // Flag page directory
+    struct PageDirectoryEntryFlag flag = {
+        .present_bit                = 1,
+        .write_bit                  = 1,
+        .user_supervisor_bit        = 1,
+        .use_pagesize_4_mb          = 1
+    };
+
+    // Alokasi page ke physical memory
+    update_page_directory((void*)last_physical_addr, virtual_addr, flag);
+    page_driver_state.last_available_physical_addr = (uint8_t*)(last_physical_addr + PAGE_FRAME_SIZE);
+    return 0;
 }
 
 void flush_single_tlb(void *virtual_addr) {

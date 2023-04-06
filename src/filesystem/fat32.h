@@ -2,8 +2,7 @@
 #define _FAT32_H
 
 #include "disk.h"
-#include "cmos.h"
-#include "std/stdtype.h"
+#include "../std/stdtype.h"
 
 /**
  * FAT32 - IF2230 edition - 2023
