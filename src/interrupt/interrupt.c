@@ -66,6 +66,9 @@ void set_tss_kernel_current_stack(void) {
 
 void main_interrupt_handler(__attribute__((unused)) struct CPURegister cpu, uint32_t int_number, __attribute__((unused)) struct InterruptStack info) {
     switch (int_number) {
+        case PAGE_FAULT :
+            __asm__("hlt");
+            break;
         case PIC1 + IRQ_KEYBOARD:
             keyboard_isr();
             break;

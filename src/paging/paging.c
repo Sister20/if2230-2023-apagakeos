@@ -38,7 +38,11 @@ int8_t allocate_single_user_page_frame(void *virtual_addr) {
         .present_bit                = 1,
         .write_bit                  = 1,
         .user_supervisor_bit        = 1,
-        .use_pagesize_4_mb          = 1
+        .use_pagesize_4_mb          = 1,
+        .pwt_bit                    = 0,
+        .pcd_bit                    = 0,
+        .accessed_bit               = 0,
+        .dirty_bit                  = 0
     };
 
     // Alokasi page ke physical memory

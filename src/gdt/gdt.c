@@ -94,18 +94,20 @@ struct GlobalDescriptorTable global_descriptor_table = {
             .base_high = 0x00,
         },
         {
-            .segment_high      = (sizeof(struct TSSEntry) & (0xF << 16)) >> 16,
             .segment_low       = sizeof(struct TSSEntry),
-            .base_high         = 0,
-            .base_mid          = 0,
             .base_low          = 0,
-            .non_system        = 0,    // S bit
+
+            .base_mid          = 0,
             .type_bit          = 0x9,
+            .non_system        = 0,    // S bit
             .dpl_bit           = 0,    // DPL
             .present           = 1,    // P bit
-            .db_flag           = 1,    // D/B bit
+            .segment_high      = (sizeof(struct TSSEntry) & (0xF << 16)) >> 16,
+            .available_bit     = 0,
             .code_in_64bit     = 0,    // L bit
+            .db_flag           = 1,    // D/B bit
             .granularity       = 0,    // G bit
+            .base_high         = 0
         },
         {0}
     }

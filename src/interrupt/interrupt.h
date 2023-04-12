@@ -57,6 +57,8 @@
 #define IRQ_PRIMARY_ATA  14
 #define IRQ_SECOND_ATA   15
 
+#define PAGE_FAULT       0xe
+
 extern struct TSSEntry _interrupt_tss_entry;
 
 /**

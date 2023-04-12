@@ -1,14 +1,6 @@
 #ifndef _KERNEL_LOADER
 #define _KERNEL_LOADER
 
-/**
- * Load GDT from gdtr and launch protected mode. This function defined in asm source code.
- * 
- * @param gdtr Pointer to already defined & initialized GDTR
- * @warning Invalid address / definition of GDT will cause bootloop after calling this function.
- */
-extern void enter_protected_mode(struct GDTR *gdtr);
-
 // Optional linker variable : Pointing to kernel start & end address
 // Note : Use & operator, example : a = (uint32_t) &_linker_kernel_stack_top;
 extern uint32_t _linker_kernel_virtual_addr_start;
@@ -16,6 +8,14 @@ extern uint32_t _linker_kernel_virtual_addr_end;
 extern uint32_t _linker_kernel_physical_addr_start;
 extern uint32_t _linker_kernel_physical_addr_end;
 extern uint32_t _linker_kernel_stack_top;
+
+/**
+ * Load GDT from gdtr and launch protected mode. This function defined in asm source code.
+ * 
+ * @param gdtr Pointer to already defined & initialized GDTR
+ * @warning Invalid address / definition of GDT will cause bootloop after calling this function.
+ */
+extern void enter_protected_mode(struct GDTR *gdtr);
 
 /**
  * Execute user program from kernel, one way jump. This function is defined in asm source code.
