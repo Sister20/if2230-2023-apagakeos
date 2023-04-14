@@ -1,9 +1,15 @@
 #include "interrupt.h"
 #include "portio/portio.h"
+#include "std/stdmem.h"
 #include "keyboard/keyboard.h"
+#include "framebuffer/framebuffer.h"
+#include "idt.h"
+#include "filesystem/fat32.h"
 
 // Inisialisasi _interrupt_tss_entry
-struct TSSEntry _interrupt_tss_entry;
+struct TSSEntry _interrupt_tss_entry = {
+    .ss0  = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
+};
 
 void activate_keyboard_interrupt(void) {
     out(PIC1_DATA, PIC_DISABLE_ALL_MASK ^ (1 << IRQ_KEYBOARD));
@@ -64,6 +70,34 @@ void set_tss_kernel_current_stack(void) {
     _interrupt_tss_entry.esp0 = stack_ptr + 8; 
 }
 
+void puts(char *buf, int count, uint8_t color) {
+    for (int i = 0; i < count; i++) {
+        framebuffer_write(0, i, buf[i], color, 0x0);
+    }
+}
+
+void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptStack info) {
+    struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
+    if (cpu.eax == 0) {
+        *((int8_t*) cpu.ecx) = read(request);
+    } else if (cpu.eax == 1) {
+        *((int8_t*) cpu.ecx) = read_directory(request);
+    } else if (cpu.eax == 2) {
+        *((int8_t*) cpu.ecx) = write(request);
+    } else if (cpu.eax == 3) {
+        *((int8_t*) cpu.ecx) = delete(request);
+    } else if (cpu.eax == 4) {
+        keyboard_state_activate();
+        __asm__("sti"); // Due IRQ is disabled when main_interrupt_handler() called
+        while (is_keyboard_blocking());
+        char buf[KEYBOARD_BUFFER_SIZE];
+        get_keyboard_buffer(buf);
+        memcpy((char *) cpu.ebx, buf, cpu.ecx);
+    } else if (cpu.eax == 5) {
+        puts((char *) cpu.ebx, cpu.ecx, cpu.edx); // Modified puts() on kernel side
+    }
+}
+
 void main_interrupt_handler(__attribute__((unused)) struct CPURegister cpu, uint32_t int_number, __attribute__((unused)) struct InterruptStack info) {
     switch (int_number) {
         case PAGE_FAULT :
@@ -71,6 +105,9 @@ void main_interrupt_handler(__attribute__((unused)) struct CPURegister cpu, uint
             break;
         case PIC1 + IRQ_KEYBOARD:
             keyboard_isr();
+            break;
+        case 0x30:
+            syscall(cpu, info);
             break;
     }
 }

@@ -24,13 +24,18 @@ void kernel_setup(void) {
     // Allocate first 4 MiB virtual memory
     allocate_single_user_page_frame((uint8_t*) 0);
 
+    struct ClusterBuffer cbuf[5];
+    for (uint32_t i = 0; i < 5; i++)
+        for (uint32_t j = 0; j < CLUSTER_SIZE; j++)
+            cbuf[i].buf[j] = i + 'a';
+
     // Write shell into memory
     struct FAT32DriverRequest request = {
-        .buf                   = (uint8_t*) 0,
-        .name                  = "shell",
-        .ext                   = "\0\0\0",
+        .buf                   = cbuf,
+        .name                  = "ikanaide",
+        .ext                   = "uwu",
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-        .buffer_size           = 0x100000,
+        .buffer_size           = 0,
     };
     read(request);
 
@@ -40,5 +45,3 @@ void kernel_setup(void) {
 
     while (TRUE);
 }
-
-
