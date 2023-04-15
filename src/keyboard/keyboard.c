@@ -98,3 +98,14 @@ void keyboard_isr(void) {
     }
     pic_ack(IRQ_KEYBOARD);
 }
+
+void puts(char *buf, int count, uint8_t color) {
+    const char *s = buf;
+    while (*s++);
+    int elem = 0;
+    for (int i = count; i < count + s - buf - 1; i++) {
+        framebuffer_write(0, i, buf[elem], color, 0x0);
+        elem++;
+    }
+    framebuffer_set_cursor(0, count + s - buf - 1);
+}

@@ -6,6 +6,9 @@
 #include "idt.h"
 #include "filesystem/fat32.h"
 
+// Global variable declarations
+struct KeyboardDriverState keyboard_state;
+
 // Inisialisasi _interrupt_tss_entry
 struct TSSEntry _interrupt_tss_entry = {
     .ss0  = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
@@ -71,9 +74,14 @@ void set_tss_kernel_current_stack(void) {
 }
 
 void puts(char *buf, int count, uint8_t color) {
-    for (int i = 0; i < count; i++) {
-        framebuffer_write(0, i, buf[i], color, 0x0);
+    const char *s = buf;
+    while (*s++);
+    int elem = 0;
+    for (int i = count; i < count + s - buf - 1; i++) {
+        framebuffer_write(0, i, buf[elem], color, 0x0);
+        elem++;
     }
+    framebuffer_set_cursor(0, count + s - buf - 1);
 }
 
 void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptStack info) {
