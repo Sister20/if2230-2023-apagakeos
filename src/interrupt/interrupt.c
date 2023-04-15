@@ -6,9 +6,6 @@
 #include "idt.h"
 #include "filesystem/fat32.h"
 
-// Global variable declarations
-struct KeyboardDriverState keyboard_state;
-
 // Inisialisasi _interrupt_tss_entry
 struct TSSEntry _interrupt_tss_entry = {
     .ss0  = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
@@ -73,7 +70,7 @@ void set_tss_kernel_current_stack(void) {
     _interrupt_tss_entry.esp0 = stack_ptr + 8; 
 }
 
-void puts(char *buf, int count, uint8_t color) {
+/* void puts(char *buf, int count, uint8_t color) {
     const char *s = buf;
     while (*s++);
     int elem = 0;
@@ -82,7 +79,7 @@ void puts(char *buf, int count, uint8_t color) {
         elem++;
     }
     framebuffer_set_cursor(0, count + s - buf - 1);
-}
+} */
 
 void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptStack info) {
     if (cpu.eax == 0) {
@@ -105,7 +102,7 @@ void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptSta
         get_keyboard_buffer(buf);
         memcpy((char *) cpu.ebx, buf, cpu.ecx);
     } else if (cpu.eax == 5) {
-        puts((char *) cpu.ebx, cpu.ecx, cpu.edx); // Modified puts() on kernel side
+        puts((char *) cpu.ebx, cpu.ecx, cpu.edx);
     }
 }
 

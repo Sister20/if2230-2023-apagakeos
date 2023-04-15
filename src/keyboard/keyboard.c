@@ -65,6 +65,7 @@ bool is_keyboard_blocking(void) {
 }
 
 void keyboard_isr(void) {
+    // read_pos = baris, write_pos = kolom
     if (!keyboard_state.keyboard_input_on)
         keyboard_state.buffer_index = 0;
     else {
@@ -100,12 +101,9 @@ void keyboard_isr(void) {
 }
 
 void puts(char *buf, int count, uint8_t color) {
-    const char *s = buf;
-    while (*s++);
-    int elem = 0;
-    for (int i = count; i < count + s - buf - 1; i++) {
-        framebuffer_write(0, i, buf[elem], color, 0x0);
-        elem++;
+    for (int i = 0; i < count; i++) {
+        framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, buf[i], color, 0x0);
+        keyboard_buffer_write_pos++;
     }
-    framebuffer_set_cursor(0, count + s - buf - 1);
+    framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
 }
