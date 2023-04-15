@@ -20,7 +20,7 @@ void framebuffer_write(uint8_t row, uint8_t col, char c, uint8_t fg, uint8_t bg)
     uint16_t fullBit = (colourBit << 8) | c ;
 
     // Assign the character 2 byte into the memory
-    volatile uint16_t* where = (volatile uint16_t*) MEMORY_FRAMEBUFFER + (row*80 + col) ;
+    volatile uint16_t* where = (volatile uint16_t*) MEMORY_FRAMEBUFFER + (row * 80 + col) ;
     *where = fullBit;
 }
 

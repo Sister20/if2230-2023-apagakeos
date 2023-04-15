@@ -70,17 +70,6 @@ void set_tss_kernel_current_stack(void) {
     _interrupt_tss_entry.esp0 = stack_ptr + 8; 
 }
 
-/* void puts(char *buf, int count, uint8_t color) {
-    const char *s = buf;
-    while (*s++);
-    int elem = 0;
-    for (int i = count; i < count + s - buf - 1; i++) {
-        framebuffer_write(0, i, buf[elem], color, 0x0);
-        elem++;
-    }
-    framebuffer_set_cursor(0, count + s - buf - 1);
-} */
-
 void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptStack info) {
     if (cpu.eax == 0) {
         struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;

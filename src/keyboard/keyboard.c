@@ -6,6 +6,7 @@
 
 // Global variable declarations
 struct KeyboardDriverState keyboard_state;
+char* buff;
 
 // Declare 2 static variables to determine rows and cols
 static int keyboard_buffer_write_pos = 0;
@@ -50,13 +51,7 @@ void keyboard_state_deactivate(void) {
 
 // Get keyboard buffer values - @param buf Pointer to char buffer, recommended size at least KEYBOARD_BUFFER_SIZE
 void get_keyboard_buffer(char *buf) {
-    int i=0;
-    while (keyboard_buffer_read_pos != keyboard_buffer_write_pos) {
-        buf[i] = keyboard_state.keyboard_buffer[keyboard_buffer_read_pos];
-        keyboard_buffer_read_pos = (keyboard_buffer_read_pos + 1) % KEYBOARD_BUFFER_SIZE;
-        i++;
-    }
-    buf[i] = '\0';
+    memcpy(buf, buff, sizeof(buff));
 }
 
 // Check whether keyboard ISR is active or not - @return Equal with keyboard_input_on value
@@ -66,10 +61,10 @@ bool is_keyboard_blocking(void) {
 
 void keyboard_isr(void) {
     // read_pos = baris, write_pos = kolom
-    if (!keyboard_state.keyboard_input_on)
+    if (!keyboard_state.keyboard_input_on) {
         keyboard_state.buffer_index = 0;
-    else {
-        uint8_t  scancode    = in(KEYBOARD_DATA_PORT);
+    } else {
+        uint8_t  scancode    = in (KEYBOARD_DATA_PORT);
         char     mapped_char = keyboard_scancode_1_to_ascii_map[scancode];
         if (mapped_char == '\b' && keyboard_state.buffer_index > 0) {
             keyboard_state.buffer_index--;
@@ -88,13 +83,18 @@ void keyboard_isr(void) {
         }
 
         if (mapped_char == '\n') {
+            // Copy to temp buff
+            // Processing empty the buffer
             keyboard_state.keyboard_buffer[keyboard_state.buffer_index] = '\0';
+            memcpy(buff, keyboard_state.keyboard_buffer, keyboard_state.buffer_index);
             keyboard_state.buffer_index = 0;
             keyboard_buffer_write_pos--;
             framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, ' ', 0x0, 0x0);
             keyboard_buffer_read_pos++;
             keyboard_buffer_write_pos = 0;
             framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
+            
+            keyboard_state_deactivate();
         }
     }
     pic_ack(IRQ_KEYBOARD);

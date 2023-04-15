@@ -24,13 +24,13 @@ void put (char* buf, uint8_t color) {
 }
 
 int main(void) {
-    char buf[30];
     while (TRUE) {
         put("ApaGaKeOS@OS-IF2230", BIOS_LIGHT_GREEN);
         put(":", BIOS_GREY);
         put("/", BIOS_LIGHT_BLUE);
         put("$ ", BIOS_GREY);
-        interrupt (4, (uint32_t) buf, 30, 0x0);
+        char buffer[30];
+        interrupt (4, (uint32_t) buffer, 30, 0x0);
     }
 
     return 0;
