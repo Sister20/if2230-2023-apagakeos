@@ -28,7 +28,7 @@ void set_interrupt_gate(uint8_t int_vector, void *handler_address, uint16_t gdt_
     idt_int_gate->_r_bit_3    = INTERRUPT_GATE_R_BIT_3;
     idt_int_gate->dpl_bit     = privilege;
     idt_int_gate->valid_bit   = 1;
-    idt_int_gate->offset_high = (uint32_t)handler_address >> 16;
+    idt_int_gate->offset_high = (uint32_t) handler_address >> 16;
 }
 
 extern void* isr_stub_table[];

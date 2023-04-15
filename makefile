@@ -42,7 +42,7 @@ kernel:
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/keyboard/keyboard.c -o $(OUTPUT_FOLDER)/keyboard.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/filesystem/disk.c -o $(OUTPUT_FOLDER)/disk.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/filesystem/cmos.c -o $(OUTPUT_FOLDER)/cmos.o
-	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/filesystem/fat32.c -o $(OUTPUT_FOLDER)/fat32.o
+	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/filesystem/fat-32-no-cmos.c -o $(OUTPUT_FOLDER)/fat-32-no-cmos.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/paging/paging.c -o $(OUTPUT_FOLDER)/paging.o
 	@$(CC) $(CFLAGS) $(SOURCE_FOLDER)/paging/paging.c -o $(OUTPUT_FOLDER)/paging.o
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/kernel/kernel_loader.s -o $(OUTPUT_FOLDER)/kernel_loader.o

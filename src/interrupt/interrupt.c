@@ -77,14 +77,17 @@ void puts(char *buf, int count, uint8_t color) {
 }
 
 void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptStack info) {
-    struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
     if (cpu.eax == 0) {
+        struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = read(request);
     } else if (cpu.eax == 1) {
+        struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = read_directory(request);
     } else if (cpu.eax == 2) {
+        struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = write(request);
     } else if (cpu.eax == 3) {
+        struct FAT32DriverRequest request = *(struct FAT32DriverRequest*) cpu.ebx;
         *((int8_t*) cpu.ecx) = delete(request);
     } else if (cpu.eax == 4) {
         keyboard_state_activate();
