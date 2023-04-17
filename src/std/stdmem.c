@@ -1,5 +1,6 @@
 #include "stdtype.h"
 #include "stdmem.h"
+#include "string.h"
 
 void* memset(void *s, int c, size_t n) {
     uint8_t *buf = (uint8_t*) s;
@@ -11,6 +12,7 @@ void* memset(void *s, int c, size_t n) {
 void* memcpy(void* restrict dest, const void* restrict src, size_t n) {
     uint8_t *dstbuf       = (uint8_t*) dest;
     const uint8_t *srcbuf = (const uint8_t*) src;
+    clear(dstbuf, strlen(dstbuf));
     for (size_t i = 0; i < n; i++)
         dstbuf[i] = srcbuf[i];
     return dstbuf;
@@ -41,4 +43,11 @@ void *memmove(void *dest, const void *src, size_t n) {
     }
 
     return dest;
+}
+
+void clear(void *pointer, size_t n) {
+    uint8_t *ptr       = (uint8_t*) pointer;
+    for (size_t i = 0; i < n; i++) {
+        ptr[i] = 0x00;
+    }
 }

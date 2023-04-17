@@ -1,7 +1,7 @@
 #include "string.h"
 
-size_t strlen(const char *str) {
-    const char *s = str;
+size_t strlen(uint8_t *str) {
+    uint8_t *s = str;
     while (*s++);
 
     return s - str - 1;
