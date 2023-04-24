@@ -18,18 +18,20 @@ void interrupt (uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
 }
 
 void put (char* buf, uint8_t color) {
-    const char *s = buf;
-    while (*s++);
-    interrupt (5, (uint32_t) buf, s - buf - 1, color);
+    size_t i = 0;
+    while (buf[i] != '\0')
+        i++;
+    interrupt (5, (uint32_t) buf, i, color);
 }
 
 int main(void) {
     char buffer[300];
+    char* init[4] = {"ApaGaKeOS@OS-IF2230", ":", "/", "$ "};
+    uint8_t color[4] = {BIOS_LIGHT_GREEN, BIOS_GREY, BIOS_LIGHT_BLUE, BIOS_GREY};
     while (TRUE) {
-        put("ApaGaKeOS@OS-IF2230", BIOS_LIGHT_GREEN);
-        put(":", BIOS_GREY);
-        put("/", BIOS_LIGHT_BLUE);
-        put("$ ", BIOS_GREY);
+        for (int i = 0; i < 4; i++) {
+            put(init[i], color[i]);
+        }
         interrupt (4, (uint32_t) buffer, 300, 0x0);
     }
 

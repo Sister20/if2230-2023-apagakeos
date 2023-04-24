@@ -1,6 +1,7 @@
 #include "interrupt.h"
 #include "portio/portio.h"
 #include "std/stdmem.h"
+#include "std/string.h"
 #include "keyboard/keyboard.h"
 #include "framebuffer/framebuffer.h"
 #include "idt.h"

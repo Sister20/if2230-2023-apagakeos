@@ -1,63 +1,30 @@
 #include "string.h"
 
-size_t strlen(uint8_t *str) {
-    uint8_t *s = str;
-    while (*s++);
-
-    return s - str - 1;
+size_t strlen(char *string) {
+    size_t i = 0;
+    while (string[i] != '\0')
+        i++;
+    return i;
 }
 
-char *strcpy(char *dst, const char *src) {
-    char c;
-    char *p = dst;
-
-    while ((c = *src++)) {
-        *p++ = c;
-    }
-
-    *p = '\0';
-    return dst;
-}
-
-char *strncpy(char *dst, const char *src, size_t n) {
-    size_t i;
-
-    for (i = 0 ; i < n && src[i] != '\0' ; i++) {
-        dst[i] = src[i];
-    }
-
-    for ( ; i < n ; i++) {
-        dst[i] = '\0';
-    }
-
-    return dst;
-}
-
-
-int strcmp(const char *s1, const char *s2) {
-    while (*s1 == *s2) {
-        if (*s1 == '\0') {
-            return 0;
+// 0 sama, 1 beda
+uint8_t strcmp(char *s1, char *s2) {
+    size_t i = 0;
+    if (strlen(s1) == strlen(s2)) {
+        while (s1[i] != '\0') {
+            if (s1[i] != s2[i])
+                return 1;
+            i++;
         }
-        ++s1;
-        ++s2;
+        return 0;
     }
-
-    return *s1 - *s2;
+    return 1;
 }
 
-
-char *strcpy_safe(char *dst, const char *src, size_t dstSize) {
-    char *p = dst;
-    char *end = dst + dstSize - 1;
-    char c;
-
-    while ((c = *src++) && dst < end) {
-        *p++ = c;
+void strcpy(char *dst, char *src) {
+    size_t i = 0;
+    while (src[i] != '\0') {
+        dst[i] = src[i];
+        i++;
     }
-    if (p < end + 1) {
-        *p = '\0';
-    }
-
-    return dst;
 }

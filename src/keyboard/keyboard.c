@@ -3,10 +3,11 @@
 #include "framebuffer/framebuffer.h"
 #include "std/stdmem.h"
 #include "interrupt/interrupt.h"
+#include "std/string.h"
 
 // Global variable declarations
 struct KeyboardDriverState keyboard_state;
-char* buff;
+char buff[500];
 
 // Declare 2 static variables to determine rows and cols
 static int keyboard_buffer_write_pos = 0;
@@ -51,7 +52,7 @@ void keyboard_state_deactivate(void) {
 
 // Get keyboard buffer values - @param buf Pointer to char buffer, recommended size at least KEYBOARD_BUFFER_SIZE
 void get_keyboard_buffer(char *buf) {
-    memcpy(buf, buff, sizeof(buff));
+    memcpy(buf, buff, strlen(buff));
 }
 
 // Check whether keyboard ISR is active or not - @return Equal with keyboard_input_on value

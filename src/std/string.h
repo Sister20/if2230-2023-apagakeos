@@ -1,9 +1,6 @@
-// Implmenetasi library pemrosesan string
+// Implementasi library pemrosesan string
 #include "stdtype.h"
 
-size_t strlen(uint8_t *str);
-char *strcpy(char *dst, const char *src);
-char *strncpy(char *dst, const char *src, size_t n);
-int strcmp(const char *s1, const char *s2);
-
-char *strcpy_safe(char *dst, const char *src, size_t dstSize);
+size_t strlen(char *string);
+uint8_t strcmp(char *s1, char *s2);
+void strcpy(char *dst, char *src);
