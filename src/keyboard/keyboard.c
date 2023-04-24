@@ -53,6 +53,7 @@ void keyboard_state_deactivate(void) {
 // Get keyboard buffer values - @param buf Pointer to char buffer, recommended size at least KEYBOARD_BUFFER_SIZE
 void get_keyboard_buffer(char *buf) {
     memcpy(buf, buff, strlen(buff));
+    *(buf + strlen(buff))= '\n';
 }
 
 // Check whether keyboard ISR is active or not - @return Equal with keyboard_input_on value
