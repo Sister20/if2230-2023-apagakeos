@@ -33,7 +33,14 @@ void kernel_setup(void) {
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
         .buffer_size           = 0x100000,
     };
+    
     read(request);
+    struct ClusterBuffer cbuf[1];
+    memcpy(cbuf, "Nandemonai to kuchi wo tsugunda\nHonto wa chotto ashi wo tometakute\n", 67);
+    request.buf = cbuf;
+    memcpy(request.name, "ikanaide", 8);
+    request.buffer_size = CLUSTER_SIZE;
+    write(request);
 
     // Set TSS $esp pointer and jump into shell 
     set_tss_kernel_current_stack();

@@ -9,8 +9,10 @@
 // Color declarations
 #define BIOS_LIGHT_GREEN 0b1010
 #define BIOS_GREY        0b0111
+#define BIOS_DARK_GREY   0b1000
 #define BIOS_LIGHT_BLUE  0b1001
 #define BIOS_RED         0b1100
+#define BIOS_BROWN       0b0110
 
 // Position of current directory
 extern uint32_t current_directory;
@@ -28,7 +30,5 @@ void putn(char* buf, uint8_t color, int n);
 
 // Print Current Working Directory
 void printCWD (char* path_str, uint32_t current_dir);
-
-void processCommand(char* args_val, char (*args_info)[2], int args_count);
 
 #endif
