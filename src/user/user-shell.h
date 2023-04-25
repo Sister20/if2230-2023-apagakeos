@@ -1,6 +1,7 @@
 #include "std/stdtype.h"
 #include "std/stdmem.h"
 #include "filesystem/fat32.h"
+#include "std/string.h"
 
 #ifndef _USERSHELL_
 #define _USERSHELL_
@@ -21,8 +22,10 @@ size_t strlen(char *string);
 void clear(void* pointer, size_t n);
 // 3. Copying the string value
 void strcpy(char *dst, char *src, int type);
-// 4. Get the parsed args nums and components
-int inputparse (char *input, char output[4][64], bool *valid);
+// 4. Compare memmory fills
+int memcmp(const void *s1, const void *s2, size_t n);
+// 5. Get the parsed args nums and components
+int inputparse (char *input, char output[4][2], bool *valid);
 
 // Interrupt to main
 void interrupt (uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);

@@ -20,11 +20,3 @@ uint8_t strcmp(char *s1, char *s2) {
     }
     return 1;
 }
-
-void strcpy(char *dst, char *src) {
-    size_t i = 0;
-    while (src[i] != '\0') {
-        dst[i] = src[i];
-        i++;
-    }
-}

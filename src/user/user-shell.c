@@ -30,39 +30,80 @@ void strcpy(char *dst, char *src, int type) {
     }
 }
 
-int inputparse (char *input, char output[4][64], bool *valid) {
-    // Declare the vars
-    int nums = 1;
+int memcmp(const void *s1, const void *s2, size_t n) {
+    const uint8_t *buf1 = (const uint8_t*) s1;
+    const uint8_t *buf2 = (const uint8_t*) s2;
+    for (size_t i = 0; i < n; i++) {
+        if (buf1[i] < buf2[i])
+            return -1;
+        else if (buf1[i] > buf2[i])
+            return 1;
+    }
 
-    // Process to count the args, initialize 0
-    int i = 0;
-    int j = 0;
-    int k = 0;
-    *valid = TRUE;
-    
+    return 0;
+}
+
+int inputparse (char *input, char output[4][2], bool *valid) {
     // If empty, then return 0
     if (input[0] == 0x0A) {
         *valid = FALSE;
         return 0;
     }
 
+    // Declare the vars
+    int nums = 0;
+
+    // Process to count the args, initialize 0
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    *valid = TRUE;
+
+    bool endWord = TRUE;
+    bool startWord = TRUE;
+    int countchar = 0;
+
     // Iterate all over the chars
-    while (input[i] != 0x0A) {
-        if (input[i] == ' ') {
-            // Ready for next args
-            j++;
-            nums++;
-            k = 0;
-        } else {
-            // Fill the array
-            output[j][k] = input[i];
-            k++;
-        }
-        // Next char
+    // Ignore blanks at first
+    while (input[i] == ' ' && input[i] != 0x0A) {
         i++;
     }
 
-    // Return the number of args
+    // While belum eof
+    while (input[i] != 0x0A) {
+        // Ignore blanks
+        while (input[i] == ' ' && input[i] != 0x0A) {
+            if (!endWord) {
+                k = 0;
+                j++;
+                endWord = TRUE;
+            }
+            startWord = TRUE;
+            i++;
+        }
+
+        // Return the number of args
+        if (input[i] == 0x0A) {
+            return nums;
+        }
+
+        // Out then it is not the end of the word
+        endWord = FALSE;
+
+        // Process other chars
+        if (startWord) {
+            nums++;
+            countchar = 0;
+            output[j][k] = i;
+            startWord = FALSE;
+            k++;
+        }
+
+        countchar++;
+        output[j][k] = countchar;
+        i++; // Next char
+    }
+
     return nums;
 }
 
@@ -88,17 +129,17 @@ int main(void) {
     // uint32_t current_directory = ROOT_CLUSTER_NUMBER;
 
     // The buffers
-    char input_buff[128];
-    char input_split[4][64];
+    char input_buff[2048];
+    char input_split[4][2];
     // char path_str[256];
     char command[64];
     bool valid = FALSE;
     char args[64];
 
     while (TRUE) {
-        clear(input_buff, 128);
+        clear(input_buff, 2048);
         for (int i = 0; i < 4; i++) {
-            clear(input_split[i], 64);
+            clear(input_split[i], 2);
         }
         clear(command, 64);
         clear(args, 64);
@@ -110,16 +151,21 @@ int main(void) {
         put("$ ", BIOS_GREY);
         
         // Asking for inputs
-        interrupt (4, (uint32_t) input_buff, 128, 0x0);
+        interrupt (4, (uint32_t) input_buff, 2048, 0x0);
 
         // Get the numbers of input args
         int count = inputparse (input_buff, input_split, &valid);
         if (valid) {
             if (count == 1) {
-                strcpy(command, input_split[0], 1);
+                if (memcmp(input_buff + input_split[0][0], "ls", input_split[0][1]) == 0) {
+                    // Process ls here
+                }
             } else if (count == 2) {
-                strcpy(command, input_split[0], 1);
-                strcpy(args, input_split[1], 1);
+                if (memcmp(input_buff + input_split[0][0], "cd", input_split[0][1]) == 0) {
+                    // Process cd here
+                } else if (memcmp(input_buff + input_split[0][0], "mkdir", input_split[0][1]) == 0) {
+                    // Process mkdir here
+                }
             } else {
                 put("Your command is not valid!\n", BIOS_RED);
             }
