@@ -1,49 +1,5 @@
 #include "user-shell.h"
 
-// Some string and pointer processing libs
-size_t strlen(char *string) {
-    size_t i = 0;
-    while (string[i] != '\0')
-        i++;
-    return i;
-}
-
-void clear(void *pointer, size_t n) {
-    uint8_t *ptr       = (uint8_t*) pointer;
-    for (size_t i = 0; i < n; i++) {
-        ptr[i] = 0x00;
-    }
-}
-
-void strcpy(char *dst, char *src, int type) {
-    size_t i = 0;
-    clear(dst, strlen(dst));
-    if (type == 1) {
-        while (src[i] != '\0') {
-            dst[i] = src[i];
-            i++;
-        }
-    } else {
-        while (src[i] != 0xA) {
-            dst[i] = src[i];
-            i++;
-        }
-    }
-}
-
-int memcmp(const void *s1, const void *s2, size_t n) {
-    const uint8_t *buf1 = (const uint8_t*) s1;
-    const uint8_t *buf2 = (const uint8_t*) s2;
-    for (size_t i = 0; i < n; i++) {
-        if (buf1[i] < buf2[i])
-            return -1;
-        else if (buf1[i] > buf2[i])
-            return 1;
-    }
-
-    return 0;
-}
-
 int inputparse (char *input, char output[4][2], bool *valid) {
     // If empty, then return 0
     if (input[0] == 0x0A) {
