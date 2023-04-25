@@ -1,5 +1,7 @@
 #include "user-shell.h"
 
+uint32_t current_directory = ROOT_CLUSTER_NUMBER;
+
 /* ==================================================== SYSCALL INTERRUPT ==================================================== */
 
 // Interrupt to main
