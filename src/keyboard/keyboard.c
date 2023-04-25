@@ -104,8 +104,14 @@ void keyboard_isr(void) {
 
 void puts(char *buf, int count, uint8_t color) {
     for (int i = 0; i < count; i++) {
-        framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, buf[i], color, 0x0);
-        keyboard_buffer_write_pos++;
+        if (buf[i] == '\n') {
+            keyboard_buffer_read_pos++;
+            keyboard_buffer_write_pos = 0;
+            framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
+        } else {
+            framebuffer_write(keyboard_buffer_read_pos, keyboard_buffer_write_pos, buf[i], color, 0x0);
+            keyboard_buffer_write_pos++;
+        }
     }
     framebuffer_set_cursor(keyboard_buffer_read_pos, keyboard_buffer_write_pos);
 }
