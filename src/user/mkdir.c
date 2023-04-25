@@ -3,6 +3,8 @@
 
 #include "mkdir.h"
 #include "user-shell.h"
+#include "std/stdtype.h"
+#include "std/stdmem.h"
 
 void mkdir(char* args_val, char (*args_info)[2], int args_count) {
     // Variables to keep track the currently visited directory
