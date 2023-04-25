@@ -13,7 +13,7 @@
 #define BIOS_RED         0b1100
 
 // Position of current directory
-/* extern uint32_t current_directory = ROOT_CLUSTER_NUMBER; */
+uint32_t current_directory = ROOT_CLUSTER_NUMBER;
 
 // Some string and pointer processing libs
 // 1. String length
@@ -33,5 +33,8 @@ void interrupt (uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);
 // Some function using the base interrupt
 // 1. Put chars to screen
 void put (char* buf, uint8_t color);
+
+// Print Current Working Directory
+void printCWD (char* path_str, uint32_t current_dir);
 
 #endif

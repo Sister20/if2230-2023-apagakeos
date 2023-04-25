@@ -17,6 +17,7 @@ void clear(void *pointer, size_t n) {
 
 void strcpy(char *dst, char *src, int type) {
     size_t i = 0;
+    clear(dst, strlen(dst));
     if (type == 1) {
         while (src[i] != '\0') {
             dst[i] = src[i];
@@ -123,31 +124,40 @@ void put (char* buf, uint8_t color) {
     interrupt (5, (uint32_t) buf, strlen(buf), color);
 }
 
+// Print Current Working Directory
+void printCWD (char* path_str, uint32_t current_dir) {
+    // Biasakan untuk clear dulu
+    clear(path_str, 128);
+
+    // Intantiate length vars
+    int pathlen = 0;
+
+    if (current_dir == ROOT_CLUSTER_NUMBER) {
+        path_str[pathlen++] = '/';
+        put (path_str, BIOS_LIGHT_BLUE);
+        return;
+    }
+}
 
 int main(void) {
-    // Start working directory
-    // uint32_t current_directory = ROOT_CLUSTER_NUMBER;
-
     // The buffers
     char input_buff[2048];
     char input_split[4][2];
-    // char path_str[256];
-    char command[64];
+    char path_str[2048];
     bool valid = FALSE;
-    char args[64];
 
     while (TRUE) {
+        // Always start by clearing the buffer
         clear(input_buff, 2048);
         for (int i = 0; i < 4; i++) {
             clear(input_split[i], 2);
         }
-        clear(command, 64);
-        clear(args, 64);
+        clear(path_str, 2048);
+
         // Initialize
         put("ApaGaKeOS@OS-IF2230", BIOS_LIGHT_GREEN);
         put(":", BIOS_GREY);
-        // cwd - current woring directory
-        put("/", BIOS_LIGHT_BLUE);
+        printCWD(path_str, current_directory);
         put("$ ", BIOS_GREY);
         
         // Asking for inputs
