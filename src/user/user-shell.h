@@ -1,3 +1,6 @@
+// File : user-shell.h
+// Header for user-shell.c, contains the declaration of functions needed to run shell program
+
 #ifndef _USERSHELL_
 #define _USERSHELL_
 
@@ -16,6 +19,7 @@
 
 // Position of current directory
 extern uint32_t current_directory;
+extern struct FAT32DirectoryTable dir_table;
 
 // Get the parsed args nums and components
 int inputparse (char *args_val, char args_info[4][2]);
@@ -30,5 +34,13 @@ void putn(char* buf, uint8_t color, int n);
 
 // Print Current Working Directory
 void printCWD (char* path_str, uint32_t current_dir);
+
+/* Functions for pathing */
+
+bool isPathAbsolute(char* args_val, char (*args_info)[2]);
+
+void updateDirectoryTable(uint32_t cluster_number);
+
+int findDirectoryNumber(char* args_val, int position, int length);
 
 #endif

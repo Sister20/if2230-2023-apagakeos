@@ -1,6 +1,11 @@
+// File : user-shell.c
+// Contains the implementation of functions needed to run shell program
+
 #include "user-shell.h"
+#include "mkdir.h"
 
 uint32_t current_directory = ROOT_CLUSTER_NUMBER;
+struct FAT32DirectoryTable dir_table;
 
 /* ==================================================== SYSCALL INTERRUPT ==================================================== */
 
@@ -100,6 +105,39 @@ void printCWD(char* path_str, uint32_t current_dir) {
     }
 }
 
+/* ======================================================== PATHING ======================================================== */
+
+// Check if the path argument is an absolute path or not
+bool isPathAbsolute(char* args_val, char (*args_info)[2]) {
+    return (memcmp(args_val + (*(args_info + 1))[0], "/", 1) == 0);
+}
+
+// Update the dir_table according to the cluster number
+void updateDirectoryTable(uint32_t cluster_number) {
+    interrupt(6, (uint32_t) &dir_table, cluster_number, 0x0);
+}
+
+// Find the name of directory in the dir_table and return its cluster number
+int findDirectoryNumber(char* args_val, int position, int length) {
+    int result = -1;
+
+    int i = 1;
+    bool found = FALSE;
+    while (i < 64 && !found) {
+        if (memcmp(dir_table.table[i].name, args_val + position, length) == 0 && 
+            dir_table.table[i].user_attribute ==UATTR_NOT_EMPTY &&
+            dir_table.table[i].attribute == ATTR_SUBDIRECTORY) {
+            result = (int) ((dir_table.table[i].cluster_high << 16) | dir_table.table[i].cluster_low);
+            found = TRUE;
+        }
+        else {
+            i++;
+        }
+    }
+
+    return result;
+}
+
 /* ======================================================= MAIN FUNCTION ======================================================= */
 
 // the main function where shell run
@@ -147,7 +185,7 @@ int main(void) {
             // TODO
         }
         else if ((memcmp(args_val + *(args_info)[0], "mkdir", 5) == 0)&& ((*(args_info))[1] == 5)) {
-            // TODO
+            mkdir(args_val, args_info, args_count);
         }
         else if ((memcmp(args_val + *(args_info)[0], "cat", 3) == 0)&& ((*(args_info))[1] == 3)) {
             int32_t retcode;

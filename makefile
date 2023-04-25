@@ -70,11 +70,12 @@ inserter:
 user-shell:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/user/user-entry.s -o user-entry.o
 	@$(CC) $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user/user-shell.c -o user-shell.o
+	@$(CC) $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/user/mkdir.c -o mkdir.o
 	@$(LIN) -T $(SOURCE_FOLDER)/user/user-linker.ld -melf_i386 \
-		user-entry.o user-shell.o $(OUTPUT_FOLDER)/string.o $(OUTPUT_FOLDER)/stdmem.o -o $(OUTPUT_FOLDER)/shell
+		user-entry.o user-shell.o $(OUTPUT_FOLDER)/string.o $(OUTPUT_FOLDER)/stdmem.o mkdir.o -o $(OUTPUT_FOLDER)/shell
 	@echo Linking object shell object files and generate flat binary...
 	@$(LIN) -T $(SOURCE_FOLDER)/user/user-linker.ld -melf_i386 --oformat=elf32-i386\
-		user-entry.o user-shell.o $(OUTPUT_FOLDER)/string.o $(OUTPUT_FOLDER)/stdmem.o -o $(OUTPUT_FOLDER)/shell_elf
+		user-entry.o user-shell.o $(OUTPUT_FOLDER)/string.o $(OUTPUT_FOLDER)/stdmem.o mkdir.o -o $(OUTPUT_FOLDER)/shell_elf
 	@echo Linking object shell object files and generate ELF32 for debugging...
 	@size --target=binary bin/shell
 	@rm -f *.o

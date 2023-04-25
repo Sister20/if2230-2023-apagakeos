@@ -93,6 +93,13 @@ void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptSta
         memcpy((char *) cpu.ebx, buf, cpu.ecx);
     } else if (cpu.eax == 5) {
         puts((char *) cpu.ebx, cpu.ecx, cpu.edx);
+    } else if (cpu.eax == 6) {
+        // Interrupt No.6 : to get directory table of a directory
+        // eax = interrupt number
+        // ebx = pointer to FAT32DirectoryTable struct
+        // ecx = directory cluster number
+        // edx = unused
+        read_clusters((struct FAT32DirectoryTable*) cpu.ebx, cpu.ecx, 1);
     }
 }
 
