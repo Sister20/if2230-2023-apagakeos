@@ -4,6 +4,8 @@
 #ifndef _MKDIR_H_
 #define _MKDIR_H_
 
-void mkdir(char* args_val, char (*args_info)[2], int args_count);
+void createDirectory(char* args_val, int (*args_info)[2], int args_pos);
+
+void mkdir(char* args_val, int (*args_info)[2], int args_count);
 
 #endif
