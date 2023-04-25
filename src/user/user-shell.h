@@ -16,13 +16,14 @@
 #define BIOS_LIGHT_BLUE  0b1001
 #define BIOS_RED         0b1100
 #define BIOS_BROWN       0b0110
+#define BIOS_WHITE       0b1111
 
 // Position of current directory
 extern uint32_t current_directory;
 extern struct FAT32DirectoryTable dir_table;
 
 // Get the parsed args nums and components
-int inputparse (char *args_val, char args_info[4][2]);
+int inputparse (char *args_val, int args_info[128][2]);
 
 // Interrupt to main
 void interrupt (uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);
@@ -37,7 +38,7 @@ void printCWD (char* path_str, uint32_t current_dir);
 
 /* Functions for pathing */
 
-bool isPathAbsolute(char* args_val, char (*args_info)[2]);
+bool isPathAbsolute(char* args_val, int (*args_info)[2], int args_pos);
 
 void updateDirectoryTable(uint32_t cluster_number);
 

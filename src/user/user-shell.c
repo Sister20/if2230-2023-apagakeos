@@ -3,6 +3,7 @@
 
 #include "user-shell.h"
 #include "mkdir.h"
+#include "ls.h"
 
 uint32_t current_directory = ROOT_CLUSTER_NUMBER;
 struct FAT32DirectoryTable dir_table;
@@ -21,7 +22,7 @@ void interrupt(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
 }
 
 /* ========================================================= PARSER ========================================================= */
-int inputparse (char *args_val, char args_info[4][2]) {
+int inputparse (char *args_val, int args_info[128][2]) {
     // Declare the vars
     int nums = 0;
 
@@ -108,8 +109,8 @@ void printCWD(char* path_str, uint32_t current_dir) {
 /* ======================================================== PATHING ======================================================== */
 
 // Check if the path argument is an absolute path or not
-bool isPathAbsolute(char* args_val, char (*args_info)[2]) {
-    return (memcmp(args_val + (*(args_info + 1))[0], "/", 1) == 0);
+bool isPathAbsolute(char* args_val, int (*args_info)[2], int args_pos) {
+    return (memcmp(args_val + (*(args_info + args_pos))[0], "/", 1) == 0);
 }
 
 // Update the dir_table according to the cluster number
@@ -144,7 +145,7 @@ int findDirectoryNumber(char* args_val, int position, int length) {
 int main(void) {
     // The buffers
     char args_val[2048];
-    char args_info[4][2];
+    int args_info[128][2];
     char path_str[2048];
 
     // Request section
@@ -182,7 +183,7 @@ int main(void) {
             // TODO
         }
         else if ((memcmp(args_val + *(args_info)[0], "ls", 2) == 0) && ((*(args_info))[1] == 2)) {
-            // TODO
+            ls(args_val, args_info, args_count);
         }
         else if ((memcmp(args_val + *(args_info)[0], "mkdir", 5) == 0)&& ((*(args_info))[1] == 5)) {
             mkdir(args_val, args_info, args_count);
@@ -228,7 +229,7 @@ int main(void) {
         }
         else {
             for (char i = 0; i < (*(args_info))[1]; i++) {
-                putn((args_val + *(args_info)[0] + i), BIOS_RED, 1);
+                putn(args_val + (*(args_info))[0] + i, BIOS_RED, 1);
             }
             put(": command not found\n", BIOS_RED);
         }
