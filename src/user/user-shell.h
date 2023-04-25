@@ -25,7 +25,7 @@ void strcpy(char *dst, char *src, int type);
 // 4. Compare memmory fills
 int memcmp(const void *s1, const void *s2, size_t n);
 // 5. Get the parsed args nums and components
-int inputparse (char *input, char output[4][2], bool *valid);
+int inputparse (char *args_val, char args_info[4][2]);
 
 // Interrupt to main
 void interrupt (uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);
@@ -33,8 +33,11 @@ void interrupt (uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);
 // Some function using the base interrupt
 // 1. Put chars to screen
 void put (char* buf, uint8_t color);
+void putn(char* buf, uint8_t color, int n);
 
 // Print Current Working Directory
 void printCWD (char* path_str, uint32_t current_dir);
+
+void processCommand(char* args_val, char (*args_info)[2], int args_count);
 
 #endif

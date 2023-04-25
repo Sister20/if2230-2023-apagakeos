@@ -1,12 +1,20 @@
 #include "user-shell.h"
 
-int inputparse (char *input, char output[4][2], bool *valid) {
-    // If empty, then return 0
-    if (input[0] == 0x0A) {
-        *valid = FALSE;
-        return 0;
-    }
+/* ==================================================== SYSCALL INTERRUPT ==================================================== */
 
+// Interrupt to main
+void interrupt(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
+    __asm__ volatile("mov %0, %%ebx" : /* <Empty> */ : "r"(ebx));
+    __asm__ volatile("mov %0, %%ecx" : /* <Empty> */ : "r"(ecx));
+    __asm__ volatile("mov %0, %%edx" : /* <Empty> */ : "r"(edx));
+    __asm__ volatile("mov %0, %%eax" : /* <Empty> */ : "r"(eax));
+    // Note : gcc usually use %eax as intermediate register,
+    //        so it need to be the last one to mov
+    __asm__ volatile("int $0x30");
+}
+
+/* ========================================================= PARSER ========================================================= */
+int inputparse (char *args_val, char args_info[4][2]) {
     // Declare the vars
     int nums = 0;
 
@@ -14,7 +22,6 @@ int inputparse (char *input, char output[4][2], bool *valid) {
     int i = 0;
     int j = 0;
     int k = 0;
-    *valid = TRUE;
 
     bool endWord = TRUE;
     bool startWord = TRUE;
@@ -22,14 +29,14 @@ int inputparse (char *input, char output[4][2], bool *valid) {
 
     // Iterate all over the chars
     // Ignore blanks at first
-    while (input[i] == ' ' && input[i] != 0x0A) {
+    while (args_val[i] == ' ' && args_val[i] != 0x0A) {
         i++;
     }
 
     // While belum eof
-    while (input[i] != 0x0A) {
+    while (args_val[i] != 0x0A) {
         // Ignore blanks
-        while (input[i] == ' ' && input[i] != 0x0A) {
+        while (args_val[i] == ' ' && args_val[i] != 0x0A) {
             if (!endWord) {
                 k = 0;
                 j++;
@@ -40,7 +47,7 @@ int inputparse (char *input, char output[4][2], bool *valid) {
         }
 
         // Return the number of args
-        if (input[i] == 0x0A) {
+        if (args_val[i] == 0x0A) {
             return nums;
         }
 
@@ -51,37 +58,33 @@ int inputparse (char *input, char output[4][2], bool *valid) {
         if (startWord) {
             nums++;
             countchar = 0;
-            output[j][k] = i;
+            args_info[j][k] = i;
             startWord = FALSE;
             k++;
         }
 
         countchar++;
-        output[j][k] = countchar;
+        args_info[j][k] = countchar;
         i++; // Next char
     }
 
     return nums;
 }
 
-// Interrupt to main
-void interrupt (uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
-    __asm__ volatile("mov %0, %%ebx" : /* <Empty> */ : "r"(ebx));
-    __asm__ volatile("mov %0, %%ecx" : /* <Empty> */ : "r"(ecx));
-    __asm__ volatile("mov %0, %%edx" : /* <Empty> */ : "r"(edx));
-    __asm__ volatile("mov %0, %%eax" : /* <Empty> */ : "r"(eax));
-    // Note : gcc usually use %eax as intermediate register,
-    //        so it need to be the last one to mov
-    __asm__ volatile("int $0x30");
+/* ========================================================= PRINTER ========================================================= */
+
+// Wrapper for the base interrupt
+void put(char* buf, uint8_t color) {
+    interrupt(5, (uint32_t) buf, strlen(buf), color);
 }
 
-// Some function using the base interrupt
-void put (char* buf, uint8_t color) {
-    interrupt (5, (uint32_t) buf, strlen(buf), color);
+// Wrapper for the base interrupt, have additional argument n
+void putn(char* buf, uint8_t color, int n) {
+    interrupt(5, (uint32_t) buf, n, color);
 }
 
 // Print Current Working Directory
-void printCWD (char* path_str, uint32_t current_dir) {
+void printCWD(char* path_str, uint32_t current_dir) {
     // Biasakan untuk clear dulu
     clear(path_str, 128);
 
@@ -95,18 +98,57 @@ void printCWD (char* path_str, uint32_t current_dir) {
     }
 }
 
+/* ======================================================= MAIN FUNCTION ======================================================= */
+
+// process input command from user
+void processCommand(char* args_val, char (*args_info)[2], int args_count) {;
+    if ((memcmp(args_val + *(args_info)[0], "cd", 2) == 0) && ((*(args_info))[1] == 2)) {
+        // TODO
+    }
+    else if ((memcmp(args_val + *(args_info)[0], "ls", 2) == 0) && ((*(args_info))[1] == 2)) {
+        // TODO
+    }
+    else if ((memcmp(args_val + *(args_info)[0], "mkdir", 5) == 0)&& ((*(args_info))[1] == 5)) {
+        // TODO
+    }
+    else if ((memcmp(args_val + *(args_info)[0], "cat", 3) == 0)&& ((*(args_info))[1] == 3)) {
+        // TODO
+    }
+    else if ((memcmp(args_val + *(args_info)[0], "cp", 2) == 0)&& ((*(args_info))[1] == 2)) {
+        // TODO
+    }
+    else if ((memcmp(args_val + *(args_info)[0], "rm", 2) == 0)&& ((*(args_info))[1] == 2)) {
+        // TODO
+    }
+    else if ((memcmp(args_val + *(args_info)[0], "mv", 2) == 0)&& ((*(args_info))[1] == 2)) {
+        // TODO
+    }
+    else if ((memcmp(args_val + *(args_info)[0], "whereis", 7) == 0)&& ((*(args_info))[1] == 7)) {
+        // TODO
+    }
+    else {
+        for (char i = 0; i < (*(args_info))[1]; i++) {
+            putn((args_val + *(args_info)[0] + i), BIOS_RED, 1);
+        }
+        put(": command not found\n", BIOS_RED);
+    }
+
+    // Temp Code to use args_count until the right implementation to it exist. Delete when implementing later
+    args_count++;
+}
+
+// the main function where shell run
 int main(void) {
     // The buffers
-    char input_buff[2048];
-    char input_split[4][2];
+    char args_val[2048];
+    char args_info[4][2];
     char path_str[2048];
-    bool valid = FALSE;
 
     while (TRUE) {
         // Always start by clearing the buffer
-        clear(input_buff, 2048);
+        clear(args_val, 2048);
         for (int i = 0; i < 4; i++) {
-            clear(input_split[i], 2);
+            clear(args_info[i], 2);
         }
         clear(path_str, 2048);
 
@@ -117,28 +159,11 @@ int main(void) {
         put("$ ", BIOS_GREY);
         
         // Asking for inputs
-        interrupt (4, (uint32_t) input_buff, 2048, 0x0);
+        interrupt (4, (uint32_t) args_val, 2048, 0x0);
 
         // Get the numbers of input args
-        int count = inputparse (input_buff, input_split, &valid);
-        if (valid) {
-            if (count == 1) {
-                if (memcmp(input_buff + input_split[0][0], "ls", input_split[0][1]) == 0) {
-                    // Process ls here
-                }
-            } else if (count == 2) {
-                if (memcmp(input_buff + input_split[0][0], "cd", input_split[0][1]) == 0) {
-                    // Process cd here
-                } else if (memcmp(input_buff + input_split[0][0], "mkdir", input_split[0][1]) == 0) {
-                    // Process mkdir here
-                }
-            } else {
-                put("Your command is not valid!\n", BIOS_RED);
-            }
-        } else {
-            put("Your command is not valid!\n", BIOS_RED);
-        }
-        
+        int args_count = inputparse (args_val, args_info);
+        processCommand(args_val, args_info, args_count);
     }
 
     return 0;
