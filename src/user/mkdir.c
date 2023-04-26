@@ -9,17 +9,18 @@
 void createDirectory(char* args_val, int (*args_info)[2], int args_pos) {
 // Variables to keep track the currently visited directory
     uint32_t search_directory_number = ROOT_CLUSTER_NUMBER;
-    int temp_directory_number = 0;
+    char* name = "\0\0\0\0\0\0\0\0";
 
     // Variables for parsing the arguments
     int posName = (*(args_info + args_pos))[0];
     int lenName = 0;
     int index = posName;
+    int entry_index = -1;
 
     int posEndArgs = (*(args_info + args_pos))[0] + (*(args_info + args_pos))[1];
     bool endOfArgs = (posName+lenName-1 == posEndArgs);
     bool endWord = TRUE;
-    bool newDirectoryFound = FALSE;
+    bool newFileFound = FALSE;
 
     int errorCode = 0;
 
@@ -41,9 +42,14 @@ void createDirectory(char* args_val, int (*args_info)[2], int args_pos) {
             }
             else {
                 // If there is a new word after non-existent directory, set an error code and stop parsing
-                if (newDirectoryFound) {
-                    newDirectoryFound = FALSE;
-                    errorCode = 4;
+                if (newFileFound) {
+                    newFileFound = FALSE;
+                    if (errorCode == 5) {
+                        errorCode = 1;
+                    }
+                    else {
+                        errorCode = 4;
+                    }
                     endOfArgs = TRUE;
                 }
                 else {
@@ -66,13 +72,21 @@ void createDirectory(char* args_val, int (*args_info)[2], int args_pos) {
                     updateDirectoryTable(search_directory_number);
                 }
                 else {
-                    temp_directory_number = findDirectoryNumber(args_val, posName, lenName);
-                    if (temp_directory_number == -1) {
-                        newDirectoryFound = TRUE;
+                    clear(name, 8);
+                    memcpy(name, args_val + posName, lenName);
+                    entry_index = findEntryName(name);
+                    if (entry_index == -1) {
+                        newFileFound = TRUE;
                     }
                     else {
-                        search_directory_number = temp_directory_number;
-                        updateDirectoryTable(search_directory_number);
+                        if (dir_table.table[entry_index].attribute == ATTR_SUBDIRECTORY) {
+                            search_directory_number = (int) ((dir_table.table[entry_index].cluster_high << 16) | dir_table.table[entry_index].cluster_low);
+                            updateDirectoryTable(search_directory_number);
+                        }
+                        else {
+                            newFileFound = TRUE;
+                            errorCode = 5;
+                        }
                     }
                 }
                 endWord = TRUE;
@@ -89,15 +103,19 @@ void createDirectory(char* args_val, int (*args_info)[2], int args_pos) {
         }
     }
 
-    if (!newDirectoryFound) {
+    if (!newFileFound) {
         put("mkdir: cannot create directory '", BIOS_RED);
         putn(args_val + (*(args_info + args_pos))[0], BIOS_RED, (*(args_info + args_pos))[1]); 
         switch (errorCode) {
         case 0:
-            put("': Folder exist\n", BIOS_RED);
+        case 5:
+            put("': File exist\n", BIOS_RED);
+            break;
+        case 1:
+            put("': Not a directory\n", BIOS_RED);
             break;
         case 3:
-            put("': Folder name is too long\n", BIOS_RED);
+            put("': Argument name is too long\n", BIOS_RED);
             break;
         case 4:
             put("': No such file or directory\n", BIOS_RED);
@@ -107,7 +125,7 @@ void createDirectory(char* args_val, int (*args_info)[2], int args_pos) {
     else {
         struct FAT32DriverRequest request = {
             .buf = 0,
-            .name = "\0\0\0\0\0\0\0",
+            .name = "\0\0\0\0\0\0\0\0",
             .ext = "\0\0\0",
             .parent_cluster_number = search_directory_number,
             .buffer_size = 0
@@ -120,7 +138,7 @@ void createDirectory(char* args_val, int (*args_info)[2], int args_pos) {
             putn(args_val + (*(args_info + args_pos))[0], BIOS_RED, (*(args_info + args_pos))[1]); 
             switch (errorCode) {
             case 1:
-                put("': Folder exist\n", BIOS_RED);
+                put("': File exist\n", BIOS_RED);
                 break;
             case -1:
                 put("': Unknown error occured\n", BIOS_RED);
