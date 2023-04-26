@@ -95,17 +95,50 @@ void putn(char* buf, uint8_t color, int n) {
 
 // Print Current Working Directory
 void printCWD(char* path_str, uint32_t current_dir) {
+    // Intantiate vars and length vars
+    int pathlen = 0;
+    int nodecount = 0;
+    char nodeIndex [10][64];
+
     // Biasakan untuk clear dulu
     clear(path_str, 128);
-
-    // Intantiate length vars
-    int pathlen = 0;
+    for (int i = 0; i < 10; i++) {
+        clear(nodeIndex[i], 64);
+    }
 
     if (current_dir == ROOT_CLUSTER_NUMBER) {
         path_str[pathlen++] = '/';
         put (path_str, BIOS_LIGHT_BLUE);
         return;
     }
+    
+    // Loop sampe parentnya ROOT
+    uint32_t parent = current_dir;
+    path_str[pathlen++] = '/';
+    while (parent != ROOT_CLUSTER_NUMBER) {
+        // Isi dir_table dengan isi dari cluster sekarang
+        updateDirectoryTable(parent);
+
+        // Ambil parentnya
+        parent = (uint32_t) ((dir_table.table[0].cluster_high << 16) | dir_table.table[0].cluster_low);
+        
+        // Masukin namanya ke list
+        memcpy(nodeIndex[nodecount], dir_table.table[0].name, strlen(dir_table.table[0].name));
+        nodecount++;
+    }
+
+    // Iterate back to get the full pathstr
+    for (int i = nodecount - 1; i >= 0; i--) {
+        for (size_t j = 0; j < strlen(nodeIndex[i]); j++) {
+            path_str[pathlen++] = nodeIndex[i][j];
+        } 
+        
+        if (i > 0) {
+            path_str[pathlen++] = '/';
+        }
+    }
+
+    put (path_str, BIOS_LIGHT_BLUE);
 }
 
 /* ======================================================== PATHING ======================================================== */
@@ -152,7 +185,7 @@ int main(void) {
     while (TRUE) {
         // Always start by clearing the buffer
         clear(args_val, 2048);
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 128; i++) {
             clear(args_info[i], 2);
         }
         clear(path_str, 2048);
