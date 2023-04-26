@@ -4,6 +4,7 @@
 #include "user-shell.h"
 #include "mkdir.h"
 #include "ls.h"
+#include "cat.h"
 
 uint32_t current_directory = ROOT_CLUSTER_NUMBER;
 struct FAT32DirectoryTable dir_table;
@@ -147,16 +148,6 @@ int main(void) {
     int args_info[128][2];
     char path_str[2048];
 
-    // Request section
-    struct ClusterBuffer cl           = {0};
-    struct FAT32DriverRequest request = {
-        .buf                   = &cl,
-        .name                  = "ikanaide",
-        .ext                   = "\0\0\0",
-        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-        .buffer_size           = CLUSTER_SIZE,
-    };
-
     while (TRUE) {
         // Always start by clearing the buffer
         clear(args_val, 2048);
@@ -188,31 +179,7 @@ int main(void) {
             mkdir(args_val, args_info, args_count);
         }
         else if ((memcmp(args_val + *(args_info)[0], "cat", 3) == 0)&& ((*(args_info))[1] == 3)) {
-            int32_t retcode;
-            if (args_count == 2) {
-                memcpy(request.name, args_val + args_info[1][0], args_info[1][1]);
-                request.buffer_size = CLUSTER_SIZE;
-                interrupt(0, (uint32_t) &request, (uint32_t) &retcode, 0);
-                if (retcode == 0) {
-                    put((char *) request.buf, BIOS_BROWN);
-                } else if (retcode == 1) {
-                    put("cat: ", BIOS_RED);
-                    for (char i = 0; i < args_info[1][1]; i++) {
-                        putn((args_val + args_info[1][0] + i), BIOS_RED, 1);
-                    }
-                    put(": Can not open\n", BIOS_RED);
-                } else if (retcode == 2) {
-                    put("cat: Buffer size is not enough!\n", BIOS_RED);
-                } else if (retcode == 3) {
-                    put("cat: ", BIOS_RED);
-                    for (char i = 0; i < args_info[1][1]; i++) {
-                        putn((args_val + args_info[1][0] + i), BIOS_RED, 1);
-                    }
-                    put(": No such file or directory\n", BIOS_RED);
-                }
-            } else if (args_count > 2) {
-                put("cat: too many arguments\n", BIOS_RED);
-            }
+            cat(args_val, args_info, args_count);
         }
         else if ((memcmp(args_val + *(args_info)[0], "cp", 2) == 0)&& ((*(args_info))[1] == 2)) {
             // TODO

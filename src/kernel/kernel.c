@@ -35,11 +35,14 @@ void kernel_setup(void) {
     };
     
     read(request);
-    struct ClusterBuffer cbuf[1];
-    memcpy(cbuf, "Nandemonai to kuchi wo tsugunda\nHonto wa chotto ashi wo tometakute\n", 67);
+    struct ClusterBuffer cbuf[2];
+    memcpy(cbuf, "Nandemonai to kuchi wo tsugunda\nHonto wa chotto ashi wo tometaku\n", 67);
     request.buf = cbuf;
-    memcpy(request.name, "ikanaide", 8);
+    memcpy(&request.name, "ikana", 5);
     request.buffer_size = CLUSTER_SIZE;
+    write(request);
+    memcpy(cbuf, "Ini dari file lain\n", 20);
+    memcpy(&request.name, "laina", 5);
     write(request);
 
     // Set TSS $esp pointer and jump into shell 
