@@ -30,7 +30,6 @@ void printDirectoryTable() {
 void access(char* args_val, int (*args_info)[2], int args_pos) {
     // Variables to keep track the currently visited directory
     uint32_t search_directory_number = ROOT_CLUSTER_NUMBER;
-    int temp_directory_number = 0;
     int oneArgFlag = args_pos;
 
     if (args_pos == -1) {
@@ -47,10 +46,13 @@ void access(char* args_val, int (*args_info)[2], int args_pos) {
         int posName = (*(args_info + args_pos))[0];
         int lenName = 0;
         int index = posName;
+        int entry_index = -1;
+        char* name = "\0\0\0\0\0\0\0\0";
 
         int posEndArgs = (*(args_info + args_pos))[0] + (*(args_info + args_pos))[1];
         bool endOfArgs = (posName+lenName-1 == posEndArgs);
         bool endWord = TRUE;
+        bool fileFound = FALSE;
         bool directoryNotFound = FALSE;
 
         int errorCode = 0;
@@ -72,9 +74,17 @@ void access(char* args_val, int (*args_info)[2], int args_pos) {
                     lenName++;
                 }
                 else {
-                    endWord = FALSE;
-                    posName = index;
-                    lenName = 1;
+                    if (fileFound && index != posEndArgs) {
+                        errorCode = 1;
+                        directoryNotFound = TRUE;
+                        fileFound = FALSE;
+                        endOfArgs = TRUE;
+                    }
+                    else {
+                        endWord = FALSE;
+                        posName = index;
+                        lenName = 1;
+                    }
                 }
             }
             else {
@@ -91,14 +101,21 @@ void access(char* args_val, int (*args_info)[2], int args_pos) {
                         updateDirectoryTable(search_directory_number);
                     }
                     else {
-                        temp_directory_number = findDirectoryNumber(args_val, posName, lenName);
-                        if (temp_directory_number == -1) {
+                        clear(name, 8);
+                        memcpy(name, args_val + posName, lenName);
+                        entry_index = findEntryName(name);
+                        if (entry_index == -1) {
                             directoryNotFound = TRUE;
                             endOfArgs = TRUE;
                         }
                         else {
-                            search_directory_number = temp_directory_number;
-                            updateDirectoryTable(search_directory_number);
+                            if (dir_table.table[entry_index].attribute == ATTR_SUBDIRECTORY) {
+                                search_directory_number =  (int) ((dir_table.table[entry_index].cluster_high << 16) | dir_table.table[entry_index].cluster_low);;
+                                updateDirectoryTable(search_directory_number);
+                            }
+                            else {
+                                fileFound = TRUE;
+                            }
                         }
                     }
                     endWord = TRUE;
@@ -119,6 +136,9 @@ void access(char* args_val, int (*args_info)[2], int args_pos) {
             put("ls: cannot access '", BIOS_RED);
             putn(args_val + (*(args_info + args_pos))[0], BIOS_RED, (*(args_info + args_pos))[1]); 
             switch (errorCode) {
+            case 1:
+                put("': Not a directory\n", BIOS_RED);
+                break;
             case 3:
                 put("': Directory name is too long\n", BIOS_RED);
                 break;
@@ -128,11 +148,17 @@ void access(char* args_val, int (*args_info)[2], int args_pos) {
             }
         }
         else {
-            if (oneArgFlag > 0) {
+            if (fileFound) {
                 putn(args_val + (*(args_info + args_pos))[0], BIOS_WHITE, (*(args_info + args_pos))[1]);
-                put(":\n", BIOS_WHITE);
+                put("\n", BIOS_WHITE);
             }
-            printDirectoryTable();
+            else { 
+                if (oneArgFlag > 0) {
+                    putn(args_val + (*(args_info + args_pos))[0], BIOS_WHITE, (*(args_info + args_pos))[1]);
+                    put(":\n", BIOS_WHITE);
+                }
+                printDirectoryTable();
+            }
         }
     }
 }
