@@ -6,10 +6,6 @@
 
 void copy(char* args_val, int (*args_info)[2], int args_count);
 
-// void printDirectoryTable();
-
-// void access(char* args_val, int (*args_info)[2], int args_pos);
-
 void cp(char* args_val, int (*args_info)[2], int args_count);
 
 #endif
