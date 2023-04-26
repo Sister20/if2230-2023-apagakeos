@@ -42,6 +42,6 @@ bool isPathAbsolute(char* args_val, int (*args_info)[2], int args_pos);
 
 void updateDirectoryTable(uint32_t cluster_number);
 
-int findDirectoryNumber(char* args_val, int position, int length);
+int findEntryName(char* name);
 
 #endif

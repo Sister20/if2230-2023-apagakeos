@@ -216,14 +216,13 @@ int8_t write(struct FAT32DriverRequest request) {
     bool valid = TRUE;
     bool full = TRUE;
 
-    // check the total entry in the directory and if there is entry with same name and extension
+    // check the total entry in the directory and if there is entry with same name
     while (entryChecked <= 64 && valid) {
         if (driverState.dir_table_buf.table[entryChecked-1].user_attribute != UATTR_NOT_EMPTY && full) {
             full = FALSE;
             entryRow = entryChecked-1;
         }
         if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 && 
-            memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0 &&
             driverState.dir_table_buf.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
             valid = FALSE;
         }
@@ -382,7 +381,6 @@ int8_t delete(struct FAT32DriverRequest request) {
 
     while (entryChecked <= 64 && !found) {
         if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 &&
-            memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0 &&
             driverState.dir_table_buf.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
             found = TRUE;
             entryRow = entryChecked-1;

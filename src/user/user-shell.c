@@ -119,16 +119,15 @@ void updateDirectoryTable(uint32_t cluster_number) {
 }
 
 // Find the name of directory in the dir_table and return its cluster number
-int findDirectoryNumber(char* args_val, int position, int length) {
+int findEntryName(char* name) {
     int result = -1;
 
     int i = 1;
     bool found = FALSE;
     while (i < 64 && !found) {
-        if (memcmp(dir_table.table[i].name, args_val + position, length) == 0 && 
-            dir_table.table[i].user_attribute ==UATTR_NOT_EMPTY &&
-            dir_table.table[i].attribute == ATTR_SUBDIRECTORY) {
-            result = (int) ((dir_table.table[i].cluster_high << 16) | dir_table.table[i].cluster_low);
+        if (memcmp(dir_table.table[i].name, name, 8) == 0 && 
+            dir_table.table[i].user_attribute == UATTR_NOT_EMPTY) {
+            result = i;
             found = TRUE;
         }
         else {
