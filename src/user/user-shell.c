@@ -7,6 +7,7 @@
 #include "mkdir.h"
 #include "cat.h"
 #include "cp.h"
+#include "whereis.h"
 
 uint32_t current_directory = ROOT_CLUSTER_NUMBER;
 struct FAT32DirectoryTable dir_table;
@@ -226,7 +227,7 @@ int main(void) {
             // TODO
         }
         else if ((memcmp(args_val + *(args_info)[0], "whereis", 7) == 0)&& ((*(args_info))[1] == 7)) {
-            // TODO
+            whereis(args_val, args_info, args_count);
         }
         else {
             for (char i = 0; i < (*(args_info))[1]; i++) {
