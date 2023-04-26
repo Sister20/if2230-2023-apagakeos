@@ -2,8 +2,9 @@
 // Contains the implementation of functions needed to run shell program
 
 #include "user-shell.h"
-#include "mkdir.h"
+#include "cd.h"
 #include "ls.h"
+#include "mkdir.h"
 #include "cat.h"
 
 uint32_t current_directory = ROOT_CLUSTER_NUMBER;
@@ -170,7 +171,7 @@ int main(void) {
         
         // processing the command
         if ((memcmp(args_val + *(args_info)[0], "cd", 2) == 0) && ((*(args_info))[1] == 2)) {
-            // TODO
+            cd(args_val, args_info, args_count);
         }
         else if ((memcmp(args_val + *(args_info)[0], "ls", 2) == 0) && ((*(args_info))[1] == 2)) {
             ls(args_val, args_info, args_count);
