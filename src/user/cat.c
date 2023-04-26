@@ -9,7 +9,8 @@
 void showFiles (char* args_val, int (*args_info)[2], int args_pos) {
     // Variables to keep track the currently visited directory
     uint32_t search_directory_number = ROOT_CLUSTER_NUMBER;
-    char* name = "\0\0\0\0\0\0\0\0";
+    char srcName[8] = {'\0','\0','\0','\0','\0','\0','\0','\0'};
+    char srcExt[3] = {'\0','\0','\0'};
 
     // Variables for parsing the arguments
     int posName = (*(args_info + args_pos))[0];
@@ -66,9 +67,21 @@ void showFiles (char* args_val, int (*args_info)[2], int args_pos) {
                     search_directory_number = (int) ((dir_table.table[0].cluster_high << 16) | dir_table.table[0].cluster_low);
                     updateDirectoryTable(search_directory_number);
                 } else {
-                    clear(name, 8);
-                    memcpy(name, args_val + posName, lenName);
-                    entry_index = findEntryName(name);
+                    clear(srcName, 8);
+                    clear(srcExt,3);
+                    int i = 0;
+                    while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
+                        i++;
+                    }
+                    if (i < lenName) { // Jika ada extension
+                        memcpy(srcName, args_val + posName, i);
+                        if (*(args_val + posName + i + 1) != 0x0A) {
+                            memcpy(srcExt, args_val + posName + i + 1, lenName-i-1);
+                        }
+                    } else {
+                        memcpy(srcName, args_val + posName, lenName);
+                    }
+                    entry_index = findEntryName(srcName);
                     if (entry_index == -1) {
                         directoryNotFound = TRUE;
                         endOfArgs = TRUE;
@@ -119,7 +132,8 @@ void showFiles (char* args_val, int (*args_info)[2], int args_pos) {
             .buffer_size = 4 * CLUSTER_SIZE,
         };
 
-        memcpy(&(request.name), args_val + posName, lenName);
+        memcpy(&(request.name), srcName, 8);
+        memcpy(&(request.ext), srcExt, 3);
         int32_t retcode;
 
         interrupt(0, (uint32_t) &request, (uint32_t) &retcode, 0x0);
