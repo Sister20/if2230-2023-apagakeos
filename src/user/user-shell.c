@@ -6,6 +6,7 @@
 #include "ls.h"
 #include "mkdir.h"
 #include "cat.h"
+#include "cp.h"
 
 uint32_t current_directory = ROOT_CLUSTER_NUMBER;
 struct FAT32DirectoryTable dir_table;
@@ -216,7 +217,7 @@ int main(void) {
             cat(args_val, args_info, args_count);
         }
         else if ((memcmp(args_val + *(args_info)[0], "cp", 2) == 0)&& ((*(args_info))[1] == 2)) {
-            // TODO
+            cp(args_val, args_info, args_count);
         }
         else if ((memcmp(args_val + *(args_info)[0], "rm", 2) == 0)&& ((*(args_info))[1] == 2)) {
             // TODO
