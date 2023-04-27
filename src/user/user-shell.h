@@ -17,6 +17,7 @@
 #define BIOS_RED         0b1100
 #define BIOS_BROWN       0b0110
 #define BIOS_WHITE       0b1111
+#define BIOS_BLACK       0b0000
 
 // Position of current directory
 extern uint32_t current_directory;
