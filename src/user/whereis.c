@@ -51,7 +51,7 @@ void processDFS (char srcName[8], uint32_t search_directory_number, int v, bool 
                     printCWD(path_list, current_directory);
                     updateDirectoryTable(search_directory_number);
                     put("/", BIOS_LIGHT_BLUE);
-                    put(dir_table.table[i].name, BIOS_LIGHT_BLUE);
+                    put(srcName, BIOS_LIGHT_BLUE);
                     put(".", BIOS_LIGHT_BLUE);
                     put(dir_table.table[i].ext, BIOS_LIGHT_BLUE);
                     put("  ", BIOS_BLACK);
@@ -187,7 +187,7 @@ void doWhereis (char* args_val, int (*args_info)[2], int args_pos) {
                 if (memcmp(dir_table.table[i].name, srcName, 8) == 0) {
                     printCWD(path_list, current_directory);
                     updateDirectoryTable(search_directory_number);
-                    put(dir_table.table[i].name, BIOS_LIGHT_BLUE);
+                    put(srcName, BIOS_LIGHT_BLUE);
                     put(".", BIOS_LIGHT_BLUE);
                     put(dir_table.table[i].ext, BIOS_LIGHT_BLUE);
                     put("  ", BIOS_BLACK);
@@ -198,7 +198,7 @@ void doWhereis (char* args_val, int (*args_info)[2], int args_pos) {
         }
     }
 
-    put("\n", BIOS_WHITE);
+    put("\n\n", BIOS_WHITE);
 }
 
 void whereis (char* args_val, int (*args_info)[2], int args_count) {
