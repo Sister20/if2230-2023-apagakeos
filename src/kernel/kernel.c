@@ -39,6 +39,7 @@ void kernel_setup(void) {
     memcpy(cbuf, "Nandemonai to kuchi wo tsugunda\nHonto wa chotto ashi wo tometaku\n", 67);
     request.buf = cbuf;
     memcpy(&request.name, "ikana", 5);
+    memcpy(&request.ext, "txt", 3);
     request.buffer_size = CLUSTER_SIZE;
     write(request);
     memcpy(cbuf, "Ini dari file lain\n", 20);

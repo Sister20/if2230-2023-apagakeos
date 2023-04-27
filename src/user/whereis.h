@@ -6,7 +6,7 @@
 
 #include "std/stdtype.h"
 
-void processDFS (char srcName[8], uint32_t search_directory_number, uint32_t* visited, int count);
+void processDFS (char srcName[8], uint32_t search_directory_number, int v, bool visited[63]);
 
 void doWhereis (char* args_val, int (*args_info)[2], int args_pos);
 
