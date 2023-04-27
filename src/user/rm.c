@@ -18,7 +18,7 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
     int index = posName;
     int entry_index = -1;
 
-    int posEndArgs = (*(args_info + 1))[0] + (*(args_info + 1))[1];
+    int posEndArgs = (*(args_info + args_count))[0] + (*(args_info + args_count))[1];
     bool endOfArgs = (posName+lenName-1 == posEndArgs);
     bool endWord = TRUE;
     bool fileFound = FALSE;
@@ -91,41 +91,40 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
                 index++;
             }
         }
-
-        if (directoryNotFound) {
-            put("rm: cannot access '", BIOS_RED);
-            putn(args_val + (*(args_info + args_count))[0], BIOS_RED, (*(args_info + args_count))[1]); 
-            switch (errorCode) {
-            case 1:
-                put("': Not a directory\n", BIOS_RED);
-                break;
-            case 2:
-                put("': Directory name is too long\n", BIOS_RED);
-                break;
-            default:
-                put("': No such file or directory\n", BIOS_RED);
-                break;
-            }
-        }
-        else {
-            // File 
-            struct FAT32DriverRequest destReq = {
-                .buf = 0,
-                .name = "\0\0\0\0\0\0\0\0",
-                .ext = "\0\0\0",
-                .parent_cluster_number = dest_search_directory_number,
-                .buffer_size = 0
-            };
-            memcpy(&(destReq.name), name, 8);
-            uint32_t retCode;
-            interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
-            
-            if (retCode == 2) {
-                put("rm: Cannot remove, folder is not empty\n", BIOS_RED);
-            }
-        }
     }
 
+    if (directoryNotFound) {
+        put("rm: cannot access '", BIOS_RED);
+        putn(args_val + (*(args_info + args_count))[0], BIOS_RED, (*(args_info + args_count))[1]); 
+        switch (errorCode) {
+        case 1:
+            put("': Not a directory\n", BIOS_RED);
+            break;
+        case 2:
+            put("': Directory name is too long\n", BIOS_RED);
+            break;
+        default:
+            put("': No such file or directory\n", BIOS_RED);
+            break;
+        }
+    }
+    else {
+        // File 
+        struct FAT32DriverRequest destReq = {
+            .buf = 0,
+            .name = "\0\0\0\0\0\0\0\0",
+            .ext = "\0\0\0",
+            .parent_cluster_number = ((dir_table.table[0].cluster_high << 16) | dir_table   .table[0].cluster_low),
+            .buffer_size = 0
+        };
+        memcpy(&(destReq.name), name, 8);
+        uint32_t retCode;
+        interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
+        
+        if (retCode == 2) {
+            put("rm: Cannot remove, folder is not empty\n", BIOS_RED);
+        }
+    }
 }
 
 void rm(char* args_val, int (*args_info)[2], int args_count) {
