@@ -25,8 +25,9 @@ void processDFS (char srcName[8], uint32_t search_directory_number, int v, bool 
                 // Cek apakah namanya sama, kalo sama cetak
                 if (memcmp(dir_table.table[i].name, srcName, 8) == 0) {
                     printCWD(path_list, current_directory);
+                    updateDirectoryTable(search_directory_number);
                     put("/", BIOS_LIGHT_BLUE);
-                    put(dir_table.table[i].name, BIOS_LIGHT_BLUE);
+                    put(srcName, BIOS_LIGHT_BLUE);
                     put("  ", BIOS_BLACK);
                 }
                 // Sama maupun tidak, proses pencarian tetap dilakukan
@@ -48,6 +49,7 @@ void processDFS (char srcName[8], uint32_t search_directory_number, int v, bool 
                 // Cek apakah namanya sama, kalo sama cetak
                 if (memcmp(dir_table.table[i].name, srcName, 8) == 0) {
                     printCWD(path_list, current_directory);
+                    updateDirectoryTable(search_directory_number);
                     put("/", BIOS_LIGHT_BLUE);
                     put(dir_table.table[i].name, BIOS_LIGHT_BLUE);
                     put(".", BIOS_LIGHT_BLUE);
@@ -161,6 +163,7 @@ void doWhereis (char* args_val, int (*args_info)[2], int args_pos) {
                 // Cek apakah namanya sama, kalo sama cetak
                 if (memcmp(dir_table.table[i].name, srcName, 8) == 0) {
                     printCWD(path_list, current_directory);
+                    updateDirectoryTable(search_directory_number);
                     put(srcName, BIOS_LIGHT_BLUE);
                     put("  ", BIOS_BLACK);
                 }
@@ -183,6 +186,7 @@ void doWhereis (char* args_val, int (*args_info)[2], int args_pos) {
                 // Cek apakah namanya sama, kalo sama cetak
                 if (memcmp(dir_table.table[i].name, srcName, 8) == 0) {
                     printCWD(path_list, current_directory);
+                    updateDirectoryTable(search_directory_number);
                     put(dir_table.table[i].name, BIOS_LIGHT_BLUE);
                     put(".", BIOS_LIGHT_BLUE);
                     put(dir_table.table[i].ext, BIOS_LIGHT_BLUE);
