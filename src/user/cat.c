@@ -60,9 +60,47 @@ void showFiles (char* args_val, int (*args_info)[2], int args_pos) {
             if (!endWord) {
                 // If word length more than 8, set an error code and stop parsing. Else, check if the word exist as directory
                 if (lenName > 8) {
-                    errorCode = 3;
-                    directoryNotFound = TRUE;
-                    endOfArgs = TRUE;
+                    int i = 0;
+
+                    while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
+                        i++;
+                    }
+
+                    if (i >= lenName) {
+                        errorCode = 3;
+                        endOfArgs = TRUE;
+                    } else {
+                        clear(srcName, 8);
+                        clear(srcExt, 3);
+                        
+                        int i = 0;
+                        while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
+                            i++;
+                        }
+
+                        if (i < lenName) { // Jika ada extension
+                            memcpy(srcName, args_val + posName, i);
+                            if (*(args_val + posName + i + 1) != 0x0A) {
+                                memcpy(srcExt, args_val + posName + i + 1, lenName-i-1);
+                            }
+                        } else {
+                            memcpy(srcName, args_val + posName, lenName);
+                        }
+
+                        entry_index = findEntryName(srcName);
+                        
+                        if (entry_index == -1) {
+                            fileFound = TRUE;
+                        } else {
+                            if (dir_table.table[entry_index].attribute == ATTR_SUBDIRECTORY) {
+                                search_directory_number =  (int) ((dir_table.table[entry_index].cluster_high << 16) | dir_table.table[entry_index].cluster_low);;
+                                updateDirectoryTable(search_directory_number);
+                            } else {
+                                fileFound = TRUE;
+                            }
+                        }
+                    }
+                    endWord = TRUE;
                 } else if (lenName == 2 && memcmp(args_val + posName, "..", 2) == 0) {
                     search_directory_number = (int) ((dir_table.table[0].cluster_high << 16) | dir_table.table[0].cluster_low);
                     updateDirectoryTable(search_directory_number);
