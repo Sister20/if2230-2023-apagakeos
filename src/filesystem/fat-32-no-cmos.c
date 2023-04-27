@@ -195,7 +195,7 @@ int8_t write(struct FAT32DriverRequest request) {
 
     // initialize value needed for subsequent checking
     int entryRow = 0;
-    int entryChecked = 1;
+    int entryChecked = 2;
     bool valid = TRUE;
     bool full = TRUE;
 
