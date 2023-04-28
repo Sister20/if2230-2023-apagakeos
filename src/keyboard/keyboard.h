@@ -66,6 +66,8 @@ bool is_keyboard_blocking(void);
  */
 void keyboard_isr(void);
 
+void reset_keyboard_position();
+
 // Modified puts() on kernel side
 void puts(char *buf, int count, uint8_t color);
 

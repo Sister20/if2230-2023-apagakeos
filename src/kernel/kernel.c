@@ -10,7 +10,6 @@
 #include "keyboard/keyboard.h"
 #include "paging/paging.h"
 #include "kernel_loader.h"
-#include "user-shell.h"
 
 void kernel_setup(void) {
     enter_protected_mode(&_gdt_gdtr);
@@ -50,22 +49,6 @@ void kernel_setup(void) {
     // Set TSS $esp pointer and jump into shell 
     set_tss_kernel_current_stack();
     kernel_execute_user_program((uint8_t*) 0);
-    initScreen();
+    
     while (TRUE);
-}
-
-void initScreen() {
-    put("                        _____       _  __     ____   _____    ____   _____ \n", BIOS_LIGHT_GREEN);
-    put("     /\\                / ____|     | |/ /    / __ \\ / ____|  / __ \\ / ____|\n", BIOS_LIGHT_GREEN);
-    put("    /  \\   _ __   __ _| |  __  __ _| ' / ___| |  | | (___   | |  | | (___  \n", BIOS_LIGHT_GREEN);
-    put("   / /\\ \\ | '_ \\ / _` | | |_ |/ _` |  < / _ \\ |  | |\\___ \\  | |  | |\\___ \\ \n", BIOS_LIGHT_GREEN);
-    put("  / ____ \\| |_) | (_| | |__| | (_| | . \\  __/ |__| |____) | | |__| |____) |\n", BIOS_LIGHT_GREEN);
-    put(" /_/    \\_\\ .__/ \\__,_|\\_____|\\__,_|_|\\_\\___|\\____/|_____/   \\____/|_____/ \n", BIOS_LIGHT_GREEN);
-    put("          | |                                                              \n", BIOS_LIGHT_GREEN);
-    put("          |_|                                                              \n", BIOS_LIGHT_GREEN);
-    put("                        ApaGaKeOS - version 1.0.0\n", BIOS_LIGHT_GREEN);
-    put("    GitHub repository: https://github.com/Sister20/if2230-2023-apagakeos \n\n", BIOS_LIGHT_GREEN);
-    put("                                WELCOME!\n", BIOS_LIGHT_GREEN);
-    put("                    Press enter any key to get started\n\n", BIOS_LIGHT_GREEN);
-    clearScreen();
 }

@@ -100,6 +100,10 @@ void syscall(struct CPURegister cpu, __attribute__((unused)) struct InterruptSta
         // ecx = directory cluster number
         // edx = unused
         read_clusters((struct FAT32DirectoryTable*) cpu.ebx, cpu.ecx, 1);
+    } else if (cpu.eax == 7) {
+        // Interrupt No.7 : to clear page
+        framebuffer_clear();
+        reset_keyboard_position();
     }
 }
 

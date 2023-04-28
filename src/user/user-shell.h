@@ -45,4 +45,7 @@ void updateDirectoryTable(uint32_t cluster_number);
 
 int findEntryName(char* name);
 
+/* Splash screen */
+void screenInit();
+
 #endif

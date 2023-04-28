@@ -176,6 +176,21 @@ int findEntryName(char* name) {
     return result;
 }
 
+void initScreen() {
+    put("\n\n\n\n\n", BIOS_LIGHT_GREEN);
+    put("                        _____       _  __     ____   _____    ____   _____ \n", BIOS_LIGHT_GREEN);
+    put("     /\\                / ____|     | |/ /    / __ \\ / ____|  / __ \\ / ____|\n", BIOS_LIGHT_GREEN);
+    put("    /  \\   _ __   __ _| |  __  __ _| ' / ___| |  | | (___   | |  | | (___  \n", BIOS_LIGHT_GREEN);
+    put("   / /\\ \\ | '_ \\ / _` | | |_ |/ _` |  < / _ \\ |  | |\\___ \\  | |  | |\\___ \\ \n", BIOS_LIGHT_GREEN);
+    put("  / ____ \\| |_) | (_| | |__| | (_| | . \\  __/ |__| |____) | | |__| |____) |\n", BIOS_LIGHT_GREEN);
+    put(" /_/    \\_\\ .__/ \\__,_|\\_____|\\__,_|_|\\_\\___|\\____/|_____/   \\____/|_____/ \n", BIOS_LIGHT_GREEN);
+    put("          | |                                                              \n", BIOS_LIGHT_GREEN);
+    put("          |_|                                                              \n", BIOS_LIGHT_GREEN);
+    put("                        ApaGaKeOS - version 1.0.0\n", BIOS_LIGHT_GREEN);
+    put("    GitHub repository: https://github.com/Sister20/if2230-2023-apagakeos \n\n", BIOS_LIGHT_GREEN);
+    put("                                WELCOME!\n", BIOS_LIGHT_GREEN);
+    put("                    Press enter to get started\n\n", BIOS_LIGHT_GREEN);
+}
 /* ======================================================= MAIN FUNCTION ======================================================= */
 
 // the main function where shell run
@@ -185,6 +200,10 @@ int main(void) {
     int args_info[128][2];
     char path_str[2048];
 
+    initScreen();
+    interrupt (4, (uint32_t) args_val, 2048, 0x0);
+    interrupt(7, 0, 0, 0);
+    
     while (TRUE) {
         // Always start by clearing the buffer
         clear(args_val, 2048);

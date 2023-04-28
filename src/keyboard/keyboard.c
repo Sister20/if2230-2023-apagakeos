@@ -102,6 +102,11 @@ void keyboard_isr(void) {
     pic_ack(IRQ_KEYBOARD);
 }
 
+void reset_keyboard_position() {
+    keyboard_buffer_read_pos = 0;
+    keyboard_buffer_write_pos = 0;
+}
+
 void puts(char *buf, int count, uint8_t color) {
     for (int i = 0; i < count; i++) {
         if (buf[i] == '\n') {
