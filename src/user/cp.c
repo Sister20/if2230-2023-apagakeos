@@ -229,6 +229,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                 if (!endWord) {
                     // If word length more than 8, set an error code and stop parsing. Else, check if the word exist as directory
                     if (lenName > 8) {
+                        // Periksa extension
                         int i = 0;
                         while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
                             i++;
@@ -275,6 +276,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                     else {
                         clear(srcName, 8);
                         clear(srcExt,3);
+                        // Periksa extension
                         int i = 0;
                         while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
                             i++;
@@ -316,7 +318,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
             }
         }
 
-        if (errorCode == 3 || errorCode ==  4 || !srcNewFileFound) {
+        if (errorCode == 3 || errorCode ==  4) {
             put("cp: cannot stat '", BIOS_RED);
             put(srcName, BIOS_RED);
             if (srcExt[0] != 0x00) {
@@ -324,6 +326,16 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                 put(srcExt, BIOS_RED);
             }
             put("': No such file or directory\n", BIOS_RED);
+            return;
+        }
+        else if (!srcNewFileFound) {
+            put("cp: '", BIOS_RED);
+            put(srcName, BIOS_RED);
+            if (srcExt[0] != 0x00) {
+                put(".", BIOS_RED);
+                put(srcExt, BIOS_RED);
+            }
+            put("' is a directory\n", BIOS_RED);
             return;
         }
 
@@ -364,7 +376,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
             }
         } else {
             if (!newFileFound) {
-                // Direktori
+                // Tujuan berupa direktori
                 srcReq.parent_cluster_number = dest_search_directory_number;
                 interrupt(3, (uint32_t) &srcReq, (uint32_t) &retCode, 0x0);
                 interrupt(2, (uint32_t) &srcReq, (uint32_t) &retCode, 0x0);
@@ -385,7 +397,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                     }
                 }
             } else {
-                // File
+                // Tujuan berupa file
                 struct FAT32DriverRequest destReq = {
                     .buf = &cbuf,
                     .name = "\0\0\0\0\0\0\0\0",
