@@ -225,35 +225,37 @@ int main(void) {
         int args_count = inputparse (args_val, args_info);
         
         // processing the command
-        if ((memcmp(args_val + *(args_info)[0], "cd", 2) == 0) && ((*(args_info))[1] == 2)) {
-            cd(args_val, args_info, args_count);
-        }
-        else if ((memcmp(args_val + *(args_info)[0], "ls", 2) == 0) && ((*(args_info))[1] == 2)) {
-            ls(args_val, args_info, args_count);
-        }
-        else if ((memcmp(args_val + *(args_info)[0], "mkdir", 5) == 0)&& ((*(args_info))[1] == 5)) {
-            mkdir(args_val, args_info, args_count);
-        }
-        else if ((memcmp(args_val + *(args_info)[0], "cat", 3) == 0)&& ((*(args_info))[1] == 3)) {
-            cat(args_val, args_info, args_count);
-        }
-        else if ((memcmp(args_val + *(args_info)[0], "cp", 2) == 0)&& ((*(args_info))[1] == 2)) {
-            cp(args_val, args_info, args_count);
-        }
-        else if ((memcmp(args_val + *(args_info)[0], "rm", 2) == 0)&& ((*(args_info))[1] == 2)) {
-            rm(args_val, args_info, args_count);
-        }
-        else if ((memcmp(args_val + *(args_info)[0], "mv", 2) == 0)&& ((*(args_info))[1] == 2)) {
-            // TODO
-        }
-        else if ((memcmp(args_val + *(args_info)[0], "whereis", 7) == 0)&& ((*(args_info))[1] == 7)) {
-            whereis(args_val, args_info, args_count);
-        }
-        else {
-            for (char i = 0; i < (*(args_info))[1]; i++) {
-                putn(args_val + (*(args_info))[0] + i, BIOS_RED, 1);
+        if (args_count != 0) {
+            if ((memcmp(args_val + *(args_info)[0], "cd", 2) == 0) && ((*(args_info))[1] == 2)) {
+                cd(args_val, args_info, args_count);
             }
-            put(": command not found\n", BIOS_RED);
+            else if ((memcmp(args_val + *(args_info)[0], "ls", 2) == 0) && ((*(args_info))[1] == 2)) {
+                ls(args_val, args_info, args_count);
+            }
+            else if ((memcmp(args_val + *(args_info)[0], "mkdir", 5) == 0)&& ((*(args_info))[1] == 5)) {
+                mkdir(args_val, args_info, args_count);
+            }
+            else if ((memcmp(args_val + *(args_info)[0], "cat", 3) == 0)&& ((*(args_info))[1] == 3)) {
+                cat(args_val, args_info, args_count);
+            }
+            else if ((memcmp(args_val + *(args_info)[0], "cp", 2) == 0)&& ((*(args_info))[1] == 2)) {
+                cp(args_val, args_info, args_count);
+            }
+            else if ((memcmp(args_val + *(args_info)[0], "rm", 2) == 0)&& ((*(args_info))[1] == 2)) {
+                rm(args_val, args_info, args_count);
+            }
+            else if ((memcmp(args_val + *(args_info)[0], "mv", 2) == 0)&& ((*(args_info))[1] == 2)) {
+                // TODO
+            }
+            else if ((memcmp(args_val + *(args_info)[0], "whereis", 7) == 0)&& ((*(args_info))[1] == 7)) {
+                whereis(args_val, args_info, args_count);
+            }
+            else {
+                for (char i = 0; i < (*(args_info))[1]; i++) {
+                    putn(args_val + (*(args_info))[0] + i, BIOS_RED, 1);
+                }
+                put(": command not found\n", BIOS_RED);
+            }
         }
     }
 
