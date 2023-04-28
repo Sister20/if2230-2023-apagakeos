@@ -110,7 +110,7 @@ void access(char* args_val, int (*args_info)[2], int args_pos) {
                         }
                         else {
                             if (dir_table.table[entry_index].attribute == ATTR_SUBDIRECTORY) {
-                                search_directory_number =  (int) ((dir_table.table[entry_index].cluster_high << 16) | dir_table.table[entry_index].cluster_low);;
+                                search_directory_number =  (int) ((dir_table.table[entry_index].cluster_high << 16) | dir_table.table[entry_index].cluster_low);
                                 updateDirectoryTable(search_directory_number);
                             }
                             else {

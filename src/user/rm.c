@@ -25,8 +25,6 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
     bool fileFound = FALSE;
     bool directoryNotFound = FALSE;
 
-    int errorCode = 0;
-
     // If path is not absolute, set the currently visited directory to current working directory
     if (!isPathAbsolute(args_val, args_info, args_count-1)) {
         dest_search_directory_number = current_directory;
@@ -44,7 +42,6 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
                 lenName++;
             } else {
                 if (fileFound && index != posEndArgs) {
-                    errorCode = 1;
                     directoryNotFound = TRUE;
                     fileFound = FALSE;
                     endOfArgs = TRUE;
@@ -59,9 +56,43 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
             if (!endWord) {
                 // If word length more than 8, set an error code and stop parsing. Else, check if the word exist as directory
                 if (lenName > 8) {
-                    errorCode = 2;
                     directoryNotFound = TRUE;
-                    endOfArgs = TRUE;
+                    int i = 0;
+                    while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
+                        i++;
+                    }
+                    if (i >= lenName) {
+                        endOfArgs = TRUE;
+                    } else {
+                        clear(name, 8);
+                        clear(extension,3);
+                        int i = 0;
+                        while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
+                            i++;
+                        }
+                        if (i < lenName) { // Jika ada extension
+                            memcpy(name, args_val + posName, i);
+                            if (*(args_val + posName + i + 1) != 0x0A) {
+                                memcpy(extension, args_val + posName + i + 1, lenName-i-1);
+                            }
+                        } else {
+                            memcpy(name, args_val + posName, lenName);
+                        }
+                        entry_index = findEntryName(name);
+                        if (entry_index == -1) {
+                            fileFound = TRUE;
+                        }
+                        else {
+                            if (dir_table.table[entry_index].attribute == ATTR_SUBDIRECTORY) {
+                                dest_search_directory_number = (int) ((dir_table.table[entry_index].cluster_high << 16) | dir_table.table[entry_index].cluster_low);
+                                updateDirectoryTable(dest_search_directory_number);
+                            }
+                            else {
+                                fileFound = TRUE;
+                            }
+                        }
+                    }
+                    endWord = TRUE;
                 } else if (lenName == 2 && memcmp(args_val + posName, "..", 2) == 0) {
                     dest_search_directory_number = (int) ((dir_table.table[0].cluster_high << 16) | dir_table.table[0].cluster_low);
                     updateDirectoryTable(dest_search_directory_number);
@@ -110,7 +141,7 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
             .buf = 0,
             .name = "\0\0\0\0\0\0\0\0",
             .ext = "\0\0\0",
-            .parent_cluster_number = ((dir_table.table[0].cluster_high << 16) | dir_table   .table[0].cluster_low),
+            .parent_cluster_number = dest_search_directory_number,
             .buffer_size = 0
     };
     memcpy(&(destReq.name), name, 8);
@@ -134,6 +165,7 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
     }
     else {
         // Directory
+        destReq.parent_cluster_number = ((dir_table.table[0].cluster_high << 16) | dir_table.table[0].cluster_low);
         interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
         if (retCode != 0) {
             put("rm: cannot delete '", BIOS_RED);
