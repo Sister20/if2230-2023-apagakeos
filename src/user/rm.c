@@ -106,36 +106,49 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
         }
     }
 
-    if (directoryNotFound) {
-        put("rm: cannot access '", BIOS_RED);
-        putn(args_val + (*(args_info + args_count))[0], BIOS_RED, (*(args_info + args_count))[1]); 
-        switch (errorCode) {
-        case 1:
-            put("': Not a directory\n", BIOS_RED);
-            break;
-        case 2:
-            put("': Directory name is too long\n", BIOS_RED);
-            break;
-        default:
-            put("': No such file or directory\n", BIOS_RED);
-            break;
-        }
-    }
-    else {
-        // File 
-        struct FAT32DriverRequest destReq = {
+    struct FAT32DriverRequest destReq = {
             .buf = 0,
             .name = "\0\0\0\0\0\0\0\0",
             .ext = "\0\0\0",
             .parent_cluster_number = ((dir_table.table[0].cluster_high << 16) | dir_table   .table[0].cluster_low),
             .buffer_size = 0
-        };
-        memcpy(&(destReq.name), name, 8);
-        uint32_t retCode;
+    };
+    memcpy(&(destReq.name), name, 8);
+    uint32_t retCode;
+
+    if (directoryNotFound) {
+        // Check if it is a file or it doesnt exist
         interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
-        
-        if (retCode == 2) {
-            put("rm: Cannot remove, folder is not empty\n", BIOS_RED);
+        if (retCode != 0) {
+            put("rm: cannot delete '", BIOS_RED);
+            putn(args_val + (*(args_info + args_count))[0], BIOS_RED, (*(args_info + args_count))[1]); 
+            switch (retCode) {
+            case 1:
+                put("': File not found\n", BIOS_RED);
+                break;
+            default:
+                put("': No such file or directory\n", BIOS_RED);
+                break;
+            }
+        }
+    }
+    else {
+        // Directory
+        interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
+        if (retCode != 0) {
+            put("rm: cannot delete '", BIOS_RED);
+            putn(args_val + (*(args_info + args_count))[0], BIOS_RED, (*(args_info + args_count))[1]); 
+            switch (retCode) {
+            case 1:
+                put("': Directory not found\n", BIOS_RED);
+                break;
+            case 2:
+                put("': Directory not empty\n", BIOS_RED);
+                break;
+            default:
+                put("': No such file or directory\n", BIOS_RED);
+                break;
+            }
         }
     }
 }
