@@ -18,26 +18,34 @@
 | 13521172 | Nathan Tenka               | [Nat10k](https://github.com/Nat10k)                       |
 
 ## Deskripsi Singkat
-Tugas ini akan membuat sebuah program mistis yang umumnya tidak diketahui orang awam bernama sistem operasi. Sistem operasi yang akan dibuat akan berjalan pada arsitektur x86 32-bit yang nanti akan dijalankan dengan emulator QEMU. Tugas ini akan dibagi menjadi beberapa milestone.
+Tugas ini akan membuat sebuah program *mistis* yang umumnya tidak diketahui orang awam bernama sistem operasi. Sistem operasi yang akan dibuat akan berjalan pada arsitektur x86 32-bit yang nanti akan dijalankan dengan emulator QEMU. Tugas ini akan dibagi menjadi beberapa milestone.
 
 ### Milestone 1 - Booting, Kernel, 32 bit Protected Mode
 Waktu implementasi : Jumat, 10 Februari 2023 - Kamis, 2 Maret 2023
 1. Menyiapkan alat dan *repository*
-2. Pembuatan build script
+2. Pembuatan *build script*
 3. Menjalankan sistem operasi
-4. Membuat output dengan text
-5. Memasuki Protected Mode
+4. Membuat *output* dengan *text*
+5. Memasuki *Protected Mode*
 
 ### Milestone 2 - Interrupt, Driver, dan Filesystem
 Waktu implementasi : Jumat, 3 Maret 2023 - Kamis, 30 Maret 2023
 1. Interrupt dan IDT
 2. Keyboard driver
 3. Disk driver
-4. File System FAT32
-5. [BONUS] Dukungan CMOS time untuk file system
+4. *File System* FAT32
+5. [BONUS] Dukungan CMOS time untuk *file system*
 
-### Milestone 3 - TBA
-Waktu implementasi : Soon
+### Milestone 3 - Paging, User Mode, dan Shell
+Waktu implementasi : Jumat, 31 Maret 2023 - Sabtu, 29 April 2023
+1. Paging
+2. User Mode
+3. Shell
+4. [BONUS] *Relative pathing*
+5. [BONUS] Kreativitas, diantaranya
+    1. Pemrosesan perintah ganda (lebih dari 2 argumen) untuk mkdir, cat, dan whereis
+    2. Pemrosesan perintah ls lebih dari 1 argumen
+    3. Penanganan terhadap masukan dengan maupun tanpa ekstensi untuk *file*
 
 ## Sistematika File
 ```bash
@@ -48,11 +56,14 @@ Waktu implementasi : Soon
 │   ├─── filesystem
 │   ├─── framebuffer
 │   ├─── gdt
+│   ├─── inserter
 │   ├─── interrupt
 │   ├─── kernel
 │   ├─── keyboard
+│   ├─── paging
 │   ├─── portio
 │   ├─── std
+│   ├─── user
 │   ├─── linker.ld
 │   └─── menu.lst
 ├─── makefile
