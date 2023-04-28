@@ -11,6 +11,7 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
     // Variables to keep track the currently visited directory
     uint32_t dest_search_directory_number = ROOT_CLUSTER_NUMBER;
     char* name = "\0\0\0\0\0\0\0\0";
+    char* extension = "\0\0\0";
 
     // Variables for parsing the arguments
     int posName = (*(args_info + args_count))[0];
@@ -66,7 +67,19 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
                     updateDirectoryTable(dest_search_directory_number);
                 } else {
                     clear(name, 8);
-                    memcpy(name, args_val + posName, lenName);
+                    clear(extension,3);
+                    int i = 0;
+                    while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
+                        i++;
+                    }
+                    if (i < lenName) { // Jika ada extension
+                        memcpy(name, args_val + posName, i);
+                        if (*(args_val + posName + i + 1) != 0x0A) {
+                            memcpy(extension, args_val + posName + i + 1, lenName-i-1);
+                        }
+                    } else {
+                        memcpy(name, args_val + posName, lenName);
+                    }
                     entry_index = findEntryName(name);
                     if (entry_index == -1) {
                         directoryNotFound = TRUE;
