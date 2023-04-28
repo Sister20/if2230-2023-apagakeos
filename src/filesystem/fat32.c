@@ -425,7 +425,7 @@ int8_t delete(struct FAT32DriverRequest request) {
     else {
         // load the directory table of directory to delete
         struct FAT32DirectoryTable tempDir;
-        write_clusters(tempDir.table, clusterNumber, 1);
+        read_clusters(tempDir.table, clusterNumber, 1);
 
         // check if the directory is empty
         bool empty = TRUE;
