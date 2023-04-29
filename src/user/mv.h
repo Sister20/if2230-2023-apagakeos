@@ -4,7 +4,11 @@
 #ifndef _MV_H_
 #define _MV_H_
 
-int parse(char* args_val, int (*args_info)[2], int args_count, int cluster, char* name_1, char* name_2, char* ext_1, char* ext_2);
+bool remove_mv(char* args_val, int (*args_info)[2], int args_count);
+
+bool copy_mv(char* args_val, int (*args_info)[2], int args_count);
+
+int parse(char* args_val, int (*args_info)[2], int args_count, int cluster, char* _name, char* _ext);
 
 void rename(char* args_val, int (*args_info)[2], int args_count, int cluster_1, int cluster_2);
 
