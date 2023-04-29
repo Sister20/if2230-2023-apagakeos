@@ -41,11 +41,13 @@ Waktu implementasi : Jumat, 31 Maret 2023 - Sabtu, 29 April 2023
 1. Paging
 2. User Mode
 3. Shell
-4. [BONUS] *Relative pathing*
+4. [BONUS] Shell mendukung *Relative pathing*
 5. [BONUS] Kreativitas, diantaranya
-    1. Pemrosesan perintah ganda (lebih dari 2 argumen) untuk mkdir, cat, dan whereis
-    2. Pemrosesan perintah ls lebih dari 1 argumen
-    3. Penanganan terhadap masukan dengan maupun tanpa ekstensi untuk *file*
+    1. *Splash screen*
+    2. Pemrosesan perintah ganda (lebih dari 2 argumen) untuk mkdir, cat, dan whereis
+    3. Pemrosesan perintah ls lebih dari 1 argumen
+    4. Penanganan terhadap masukan dengan maupun tanpa ekstensi untuk *file*
+    5. Menambah *command* baru, clear, untuk membersihkan isi buffer pada layar
 
 ## Sistematika File
 ```bash
