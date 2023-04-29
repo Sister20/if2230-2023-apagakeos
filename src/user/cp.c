@@ -69,27 +69,21 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
             if (!endWord) {
                 // If word length more than 8, set an error code and stop parsing. Else, check if the word exist as directory
                 if (lenName > 8) {
+                    // Cek extension
                     int i = 0;
                     while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
                         i++;
                     }
-                    if (i >= lenName) {
+                    if (i >= lenName || lenName-i-1 > 3) {
+                        memcpy(destName, args_val + posName, 8);
                         errorCode = 3;
                         endOfArgs = TRUE;
                     } else {
                         clear(destName, 8);
                         clear(destExt,3);
-                        int i = 0;
-                        while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
-                            i++;
-                        }
-                        if (i < lenName) { // Jika ada extension
-                            memcpy(destName, args_val + posName, i);
-                            if (*(args_val + posName + i + 1) != 0x0A) {
-                                memcpy(destExt, args_val + posName + i + 1, lenName-i-1);
-                            }
-                        } else {
-                            memcpy(destName, args_val + posName, lenName);
+                        memcpy(destName, args_val + posName, i);
+                        if (*(args_val + posName + i + 1) != 0x0A) {
+                            memcpy(destExt, args_val + posName + i + 1, lenName-i-1);
                         }
                         entry_index = findEntryName(destName);
                         if (entry_index == -1) {
@@ -115,11 +109,18 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                 else {
                     clear(destName, 8);
                     clear(destExt,3);
+                    // Cek extension
                     int i = 0;
                     while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
                         i++;
                     }
                     if (i < lenName) { // Jika ada extension
+                        if (lenName-i-1 > 3) { // Jika extension lebih dari 3 karakter
+                            memcpy(destName, args_val + posName, i);
+                            memcpy(destExt, args_val + posName + i + 1, 3);
+                            errorCode = 3;
+                            break;
+                        }   
                         memcpy(destName, args_val + posName, i);
                         if (*(args_val + posName + i + 1) != 0x0A) {
                             memcpy(destExt, args_val + posName + i + 1, lenName-i-1);
@@ -234,23 +235,16 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                         while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
                             i++;
                         }
-                        if (i >= lenName) {
+                        clear(srcName, 8);
+                        clear(srcExt,3);
+                        if (i >= lenName || lenName-i-1 > 3) {
+                            memcpy(srcName, args_val + posName, 8);
                             errorCode = 3;
                             endOfArgs = TRUE;
                         } else {
-                            clear(srcName, 8);
-                            clear(srcExt,3);
-                            int i = 0;
-                            while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
-                                i++;
-                            }
-                            if (i < lenName) { // Jika ada extension
-                                memcpy(srcName, args_val + posName, i);
-                                if (*(args_val + posName + i + 1) != 0x0A) {
-                                    memcpy(srcExt, args_val + posName + i + 1, lenName-i-1);
-                                }
-                            } else {
-                                memcpy(srcName, args_val + posName, lenName);
+                            memcpy(srcName, args_val + posName, i);
+                            if (*(args_val + posName + i + 1) != 0x0A) {
+                                memcpy(srcExt, args_val + posName + i + 1, lenName-i-1);
                             }
                             entry_index = findEntryName(srcName);
                             if (entry_index == -1) {
@@ -282,6 +276,12 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                             i++;
                         }
                         if (i < lenName) { // Jika ada extension
+                            if (lenName-i-1 > 3) { // Jika extension lebih dari 3 karakter
+                                memcpy(srcName, args_val + posName, i);
+                                memcpy(srcExt, args_val + posName + i + 1, 3);
+                                errorCode = 3;
+                                break;
+                            }
                             memcpy(srcName, args_val + posName, i);
                             if (*(args_val + posName + i + 1) != 0x0A) {
                                 memcpy(srcExt, args_val + posName + i + 1, lenName-i-1);
@@ -348,7 +348,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
             .buffer_size = CLUSTER_SIZE
         };
         memcpy(&(srcReq.name), srcName, 8);
-        memcpy(&(srcReq.ext), srcExt,3);
+        memcpy(&(srcReq.ext), srcExt, 3);
         uint32_t retCode;
 
         interrupt(0, (uint32_t) &srcReq, (uint32_t) &retCode, 0x0);
