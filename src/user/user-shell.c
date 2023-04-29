@@ -178,18 +178,18 @@ int findEntryName(char* name) {
 
 void initScreen() {
     put("\n\n\n\n\n", BIOS_LIGHT_GREEN);
-    put("                        _____       _  __     ____   _____    ____   _____ \n", BIOS_LIGHT_GREEN);
-    put("     /\\                / ____|     | |/ /    / __ \\ / ____|  / __ \\ / ____|\n", BIOS_LIGHT_GREEN);
-    put("    /  \\   _ __   __ _| |  __  __ _| ' / ___| |  | | (___   | |  | | (___  \n", BIOS_LIGHT_GREEN);
-    put("   / /\\ \\ | '_ \\ / _` | | |_ |/ _` |  < / _ \\ |  | |\\___ \\  | |  | |\\___ \\ \n", BIOS_LIGHT_GREEN);
-    put("  / ____ \\| |_) | (_| | |__| | (_| | . \\  __/ |__| |____) | | |__| |____) |\n", BIOS_LIGHT_GREEN);
-    put(" /_/    \\_\\ .__/ \\__,_|\\_____|\\__,_|_|\\_\\___|\\____/|_____/   \\____/|_____/ \n", BIOS_LIGHT_GREEN);
-    put("          | |                                                              \n", BIOS_LIGHT_GREEN);
-    put("          |_|                                                              \n", BIOS_LIGHT_GREEN);
-    put("                        ApaGaKeOS - version 1.0.0\n", BIOS_LIGHT_GREEN);
-    put("    GitHub repository: https://github.com/Sister20/if2230-2023-apagakeos \n\n", BIOS_LIGHT_GREEN);
-    put("                                WELCOME!\n", BIOS_LIGHT_GREEN);
-    put("                    Press enter to get started\n\n", BIOS_LIGHT_GREEN);
+    put("                          _____       _  __     ____   _____    ____   _____ \n", BIOS_LIGHT_GREEN);
+    put("       /\\                / ____|     | |/ /    / __ \\ / ____|  / __ \\ / ____|\n", BIOS_LIGHT_GREEN);
+    put("      /  \\   _ __   __ _| |  __  __ _| ' / ___| |  | | (___   | |  | | (___  \n", BIOS_LIGHT_GREEN);
+    put("     / /\\ \\ | '_ \\ / _` | | |_ |/ _` |  < / _ \\ |  | |\\___ \\  | |  | |\\___ \\ \n", BIOS_LIGHT_GREEN);
+    put("    / ____ \\| |_) | (_| | |__| | (_| | . \\  __/ |__| |____) | | |__| |____) |\n", BIOS_LIGHT_GREEN);
+    put("   /_/    \\_\\ .__/ \\__,_|\\_____|\\__,_|_|\\_\\___|\\____/|_____/   \\____/|_____/ \n", BIOS_LIGHT_GREEN);
+    put("            | |                                                              \n", BIOS_LIGHT_GREEN);
+    put("            |_|                                                              \n", BIOS_LIGHT_GREEN);
+    put("                          ApaGaKeOS - version 1.0.0\n", BIOS_LIGHT_GREEN);
+    put("      GitHub repository: https://github.com/Sister20/if2230-2023-apagakeos \n\n", BIOS_LIGHT_GREEN);
+    put("                                  WELCOME!\n", BIOS_LIGHT_GREEN);
+    put("                      Press enter to get started\n\n", BIOS_LIGHT_GREEN);
 }
 /* ======================================================= MAIN FUNCTION ======================================================= */
 
@@ -251,7 +251,11 @@ int main(void) {
                 whereis(args_val, args_info, args_count);
             }
             else if ((memcmp(args_val + *(args_info)[0], "clear", 5) == 0)&& ((*(args_info))[1] == 5)) {
-                interrupt(7, 0, 0, 0);
+                if (args_count > 1) {
+                    put("clear: too many arguments\n", BIOS_RED);
+                } else {
+                    interrupt(7, 0, 0, 0);
+                }
             }
             else {
                 for (char i = 0; i < (*(args_info))[1]; i++) {

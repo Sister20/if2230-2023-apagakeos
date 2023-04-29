@@ -1,6 +1,7 @@
 #include "portio/portio.h"
 #include "std/stdtype.h"
 #include "std/stdmem.h"
+#include "std/string.h"
 #include "gdt/gdt.h"
 #include "framebuffer/framebuffer.h"
 #include "kernel_loader.h"
@@ -36,14 +37,17 @@ void kernel_setup(void) {
     
     read(request);
     struct ClusterBuffer cbuf[2];
-    memcpy(cbuf, "Nandemonai to kuchi wo tsugunda\nHonto wa chotto ashi wo tometaku\n", 67);
+    memcpy(cbuf, "Yami wo haratte yami wo haratte\nYoru no tobari ga oritara aizu da\nAitai shite mawaru kanjousen\nZaregoto nado wa hakisute ike to\n", 132);
     request.buf = cbuf;
-    memcpy(&request.name, "ikana", 5);
+    clear(&request.name, 8);
+    clear(&request.ext, 3);
+    memcpy(&request.name, "kaikai", 6);
     memcpy(&request.ext, "txt", 3);
     request.buffer_size = CLUSTER_SIZE;
     write(request);
+    clear(&request.name, 8);
     memcpy(cbuf, "Ini dari file lain\n", 20);
-    memcpy(&request.name, "laina", 5);
+    memcpy(&request.name, "lain", 4);
     write(request);
 
     // Set TSS $esp pointer and jump into shell 
