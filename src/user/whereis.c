@@ -73,14 +73,13 @@ void doWhereis (char* args_val, int (*args_info)[2], int args_pos) {
     // Variables for parsing the arguments
     int posName = (*(args_info + args_pos))[0];
     int lenName = 0;
+    int i = 0;
+    bool titikFound = TRUE;
     int index = posName;
 
     int posEndArgs = (*(args_info + args_pos))[0] + (*(args_info + args_pos))[1];
     bool endOfArgs = (posName+lenName-1 == posEndArgs);
     bool endWord = TRUE;
-    bool fileFound = FALSE;
-
-    int errorCode = 0;
 
     // Get the directory table of the visited directory
     updateDirectoryTable(search_directory_number);
@@ -93,45 +92,26 @@ void doWhereis (char* args_val, int (*args_info)[2], int args_pos) {
             if (!endWord) {
                 lenName++;
             } else {
-                if (fileFound) {
-                    fileFound = FALSE;
-                    if (errorCode == 5) {
-                        errorCode = 1;
-                    }
-                    else {
-                        errorCode = 4;
-                    }
-                    endOfArgs = TRUE;
-                }
-                else {
-                    endWord = FALSE;
-                    posName = index;
-                    lenName = 1;
-                }
+                endWord = FALSE;
+                posName = index;
+                lenName = 1;
             }
         } else {
             // Process the word
             if (!endWord) {
                 // If word length more than 8, set an error code and stop parsing. Else, check if the word exist as directory
-                if (lenName > 8) {
-                    errorCode = 3;
-                    endOfArgs = TRUE;
-                } else if (lenName == 2 && memcmp(args_val + posName, "..", 2) == 0) {
+                if (lenName == 2 && memcmp(args_val + posName, "..", 2) == 0) {
                     lenName += 2;
                 } else {
                     clear(srcName, 8);
                     clear(srcExt, 3);
-                    int i = 0;
-                    while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
-                        i++;
-                    }
-                    if (i < lenName) { // Jika ada extension
-                        memcpy(srcName, args_val + posName, i);
-                        if (*(args_val + posName + i + 1) != 0x0A) {
-                            memcpy(srcExt, args_val + posName + i + 1, lenName-i-1);
+
+                    while (i < lenName && titikFound) {
+                        if (memcmp(".", args_val + posName + i, 1) == 0) {
+                            titikFound = FALSE;
+                            break;
                         }
-                    } else {
-                        memcpy(srcName, args_val + posName, lenName);
+                        i++;
                     }
                 }
                 endWord = TRUE;
@@ -146,6 +126,13 @@ void doWhereis (char* args_val, int (*args_info)[2], int args_pos) {
                 index++;
             }
         }
+    }
+
+    // Copy file name
+    if (i < lenName) { 
+        memcpy(srcName, args_val + posName, i);
+    } else {
+        memcpy(srcName, args_val + posName, lenName);
     }
 
     put(srcName, BIOS_WHITE);
