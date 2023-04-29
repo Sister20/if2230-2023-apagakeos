@@ -74,8 +74,10 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                     while (i < lenName && memcmp(".", args_val + posName + i, 1) != 0) {
                         i++;
                     }
-                    if (i >= lenName || lenName-i-1 > 3) {
-                        memcpy(destName, args_val + posName, 8);
+                    if (i >= lenName) {
+                        errorCode = 3;
+                        endOfArgs = TRUE;
+                    } else if (lenName-i-1 > 3) {
                         errorCode = 3;
                         endOfArgs = TRUE;
                     } else {
@@ -116,8 +118,6 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                     }
                     if (i < lenName) { // Jika ada extension
                         if (lenName-i-1 > 3) { // Jika extension lebih dari 3 karakter
-                            memcpy(destName, args_val + posName, i);
-                            memcpy(destExt, args_val + posName + i + 1, 3);
                             errorCode = 3;
                             break;
                         }   
@@ -158,14 +158,12 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
     }
 
     if (errorCode == 3 || errorCode ==  4) {
-        put("Destination not valid\n", BIOS_RED);
+        put("cp : Destination not valid\n", BIOS_RED);
         return;
     }
     else if (args_count > 3 && newFileFound) { // Jika lebih dari satu file yang dicopy, maka harus dimasukkan ke dalam folder
         put("cp: target '", BIOS_RED);
-        put(destName, BIOS_RED);
-        put(".", BIOS_RED);
-        put(destExt, BIOS_RED);
+        putn(args_val + (*(args_info + args_count-1))[0], BIOS_RED, (*(args_info + args_count-1))[1]);
         put("' is not a directory\n", BIOS_RED);
         return;
     }
@@ -237,11 +235,15 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                         }
                         clear(srcName, 8);
                         clear(srcExt,3);
-                        if (i >= lenName || lenName-i-1 > 3) {
-                            memcpy(srcName, args_val + posName, 8);
+                        if (i >= lenName) {
                             errorCode = 3;
                             endOfArgs = TRUE;
-                        } else {
+                        } 
+                        else if (lenName-i-1 > 3) {
+                            errorCode = 3;
+                            endOfArgs = TRUE;
+                        } 
+                        else {
                             memcpy(srcName, args_val + posName, i);
                             if (*(args_val + posName + i + 1) != 0x0A) {
                                 memcpy(srcExt, args_val + posName + i + 1, lenName-i-1);
@@ -277,8 +279,6 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                         }
                         if (i < lenName) { // Jika ada extension
                             if (lenName-i-1 > 3) { // Jika extension lebih dari 3 karakter
-                                memcpy(srcName, args_val + posName, i);
-                                memcpy(srcExt, args_val + posName + i + 1, 3);
                                 errorCode = 3;
                                 break;
                             }
@@ -320,21 +320,13 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
 
         if (errorCode == 3 || errorCode ==  4) {
             put("cp: cannot stat '", BIOS_RED);
-            put(srcName, BIOS_RED);
-            if (srcExt[0] != 0x00) {
-                put(".", BIOS_RED);
-                put(srcExt, BIOS_RED);
-            }
+            putn(args_val + (*(args_info + j))[0], BIOS_RED, (*(args_info + j))[1]);
             put("': No such file or directory\n", BIOS_RED);
             return;
         }
         else if (!srcNewFileFound) {
             put("cp: '", BIOS_RED);
-            put(srcName, BIOS_RED);
-            if (srcExt[0] != 0x00) {
-                put(".", BIOS_RED);
-                put(srcExt, BIOS_RED);
-            }
+            putn(args_val + (*(args_info + j))[0], BIOS_RED, (*(args_info + j))[1]);
             put("' is a directory\n", BIOS_RED);
             return;
         }
@@ -355,11 +347,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
 
         if (retCode != 0) {
             put("cp: cannot stat '", BIOS_RED);
-            put(srcName, BIOS_RED);
-            if (srcExt[0] != 0x00) {
-                put(".", BIOS_RED);
-                put(srcExt, BIOS_RED);
-            }
+            putn(args_val + (*(args_info + j))[0], BIOS_RED, (*(args_info + j))[1]);
             switch (retCode) {
                 case 1:
                     put("': Is a directory\n", BIOS_RED);
@@ -382,11 +370,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                 interrupt(2, (uint32_t) &srcReq, (uint32_t) &retCode, 0x0);
                 if (retCode != 0) {
                     put("cp : cannot copy '", BIOS_RED);
-                    put(srcName, BIOS_RED);
-                    if (srcExt[0] != 0x00) {
-                        put(".", BIOS_RED);
-                        put(srcExt, BIOS_RED);
-                    }
+                    putn(args_val + (*(args_info + j))[0], BIOS_RED, (*(args_info + j))[1]);
                     switch (retCode) {
                     case 1:
                         put("': File exist\n", BIOS_RED);
@@ -411,9 +395,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                 interrupt(2, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
                 if (retCode != 0) {
                     put("cp : cannot copy '", BIOS_RED);
-                    put(srcName, BIOS_RED);
-                    put(".", BIOS_RED);
-                    put(srcExt, BIOS_RED);
+                    putn(args_val + (*(args_info + j))[0], BIOS_RED, (*(args_info + j))[1]);
                     switch (retCode) {
                     case 1:
                         put("': File exist\n", BIOS_RED);
