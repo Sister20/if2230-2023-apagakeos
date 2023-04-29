@@ -8,6 +8,7 @@
 #include "cat.h"
 #include "cp.h"
 #include "rm.h"
+#include "mv.h"
 #include "whereis.h"
 
 uint32_t current_directory = ROOT_CLUSTER_NUMBER;
@@ -245,7 +246,7 @@ int main(void) {
                 rm(args_val, args_info, args_count);
             }
             else if ((memcmp(args_val + *(args_info)[0], "mv", 2) == 0)&& ((*(args_info))[1] == 2)) {
-                // TODO
+                mv(args_val, args_info, args_count);
             }
             else if ((memcmp(args_val + *(args_info)[0], "whereis", 7) == 0)&& ((*(args_info))[1] == 7)) {
                 whereis(args_val, args_info, args_count);

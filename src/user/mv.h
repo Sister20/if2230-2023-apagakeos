@@ -4,15 +4,17 @@
 #ifndef _MV_H_
 #define _MV_H_
 
+#include "std/stdtype.h"
+
 bool remove_mv(char* args_val, int (*args_info)[2], int args_count);
 
 bool copy_mv(char* args_val, int (*args_info)[2], int args_count);
 
-int parse(char* args_val, int (*args_info)[2], int args_count, int cluster, char* _name, char* _ext);
+int parse(char* args_val, int (*args_info)[2], int args_count);
 
-void rename(char* args_val, int (*args_info)[2], int args_count, int cluster_1, int cluster_2);
+void rename(char* args_val, int (*args_info)[2], int args_count);
 
-void move(char* args_val, int (*args_info)[2], int args_count, int cluster_1, int cluster_2);
+void move(char* args_val, int (*args_info)[2], int args_count);
 
 void mv(char* args_val, int (*args_info)[2], int args_count);
 
