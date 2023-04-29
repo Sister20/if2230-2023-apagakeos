@@ -356,6 +356,7 @@ int8_t delete(struct FAT32DriverRequest request) {
 
     while (entryChecked <= 64 && !found) {
         if (memcmp(driverState.dir_table_buf.table[entryChecked-1].name, request.name, 8) == 0 &&
+            memcmp(driverState.dir_table_buf.table[entryChecked-1].ext, request.ext, 3) == 0 &&
             driverState.dir_table_buf.table[entryChecked-1].user_attribute == UATTR_NOT_EMPTY) {
             found = TRUE;
             entryRow = entryChecked-1;

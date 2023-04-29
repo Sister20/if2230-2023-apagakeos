@@ -103,6 +103,8 @@ void cd(char* args_val, int (*args_info)[2], int args_count) {
             case 2:
                 put(": Not a directory\n", BIOS_RED);
                 break;
+            case 3:
+                put(": Argument name is too long\n", BIOS_RED);
             }
         }
         else {

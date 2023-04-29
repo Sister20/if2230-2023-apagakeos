@@ -10,7 +10,7 @@ void printDirectoryTable() {
     for (int i = 1; i < 63; i++) {
         if (dir_table.table[i].user_attribute == UATTR_NOT_EMPTY) {
             put(dir_table.table[i].name, BIOS_LIGHT_BLUE);
-            if (dir_table.table[i].attribute != ATTR_SUBDIRECTORY) {
+            if (dir_table.table[i].attribute != ATTR_SUBDIRECTORY && strlen(dir_table.table[i].ext) != 0) {
                 put(".", BIOS_LIGHT_BLUE);
                 putn(dir_table.table[i].ext, BIOS_LIGHT_BLUE, 3);
             }
@@ -19,7 +19,7 @@ void printDirectoryTable() {
     }
     if (dir_table.table[63].user_attribute == UATTR_NOT_EMPTY) {
         put(dir_table.table[63].name, BIOS_LIGHT_BLUE);
-        if (dir_table.table[63].attribute != ATTR_SUBDIRECTORY) {
+        if (dir_table.table[63].attribute != ATTR_SUBDIRECTORY && strlen(dir_table.table[63].ext) != 0) {
             put(".", BIOS_LIGHT_BLUE);
             putn(dir_table.table[63].ext, BIOS_LIGHT_BLUE, 3);
         }

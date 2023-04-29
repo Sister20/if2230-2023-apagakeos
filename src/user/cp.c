@@ -158,7 +158,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
     }
 
     if (errorCode == 3 || errorCode ==  4) {
-        put("cp : Destination not valid\n", BIOS_RED);
+        put("cp: Destination not valid\n", BIOS_RED);
         return;
     }
     else if (args_count > 3 && newFileFound) { // Jika lebih dari satu file yang dicopy, maka harus dimasukkan ke dalam folder
@@ -369,7 +369,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                 interrupt(3, (uint32_t) &srcReq, (uint32_t) &retCode, 0x0);
                 interrupt(2, (uint32_t) &srcReq, (uint32_t) &retCode, 0x0);
                 if (retCode != 0) {
-                    put("cp : cannot copy '", BIOS_RED);
+                    put("cp: cannot copy '", BIOS_RED);
                     putn(args_val + (*(args_info + j))[0], BIOS_RED, (*(args_info + j))[1]);
                     switch (retCode) {
                     case 1:
@@ -394,7 +394,7 @@ void copy(char* args_val, int (*args_info)[2], int args_count) {
                 interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
                 interrupt(2, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
                 if (retCode != 0) {
-                    put("cp : cannot copy '", BIOS_RED);
+                    put("cp: cannot copy '", BIOS_RED);
                     putn(args_val + (*(args_info + j))[0], BIOS_RED, (*(args_info + j))[1]);
                     switch (retCode) {
                     case 1:
