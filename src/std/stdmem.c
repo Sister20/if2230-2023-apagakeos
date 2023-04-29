@@ -1,5 +1,6 @@
-#include "lib-header/stdtype.h"
-#include "lib-header/stdmem.h"
+#include "stdtype.h"
+#include "stdmem.h"
+#include "string.h"
 
 void* memset(void *s, int c, size_t n) {
     uint8_t *buf = (uint8_t*) s;
@@ -16,7 +17,7 @@ void* memcpy(void* restrict dest, const void* restrict src, size_t n) {
     return dstbuf;
 }
 
-int memcmp(const void *s1, const void *s2, size_t n) {
+int memcmp (const void *s1, const void *s2, size_t n) {
     const uint8_t *buf1 = (const uint8_t*) s1;
     const uint8_t *buf2 = (const uint8_t*) s2;
     for (size_t i = 0; i < n; i++) {

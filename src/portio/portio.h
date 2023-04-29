@@ -1,7 +1,11 @@
 #ifndef _PORTIO_H
 #define _PORTIO_H
 
-#include "lib-header/stdtype.h"
+#include "std/stdtype.h"
+
+void out16(uint16_t port, uint16_t data);
+
+uint16_t in16(uint16_t port);
 
 /** out:
  *  Sends the given data to the given I/O port
