@@ -25,7 +25,7 @@ bool remove_mv(char* args_val, int (*args_info)[2], int args_count) {
     bool directoryNotFound = FALSE;
 
     // If path is not absolute, set the currently visited directory to current working directory
-    if (!isPathAbsolute(args_val, args_info, args_count-1)) {
+    if (!isPathAbsolute(args_val, args_info, args_count)) {
         dest_search_directory_number = current_directory;
     }
 
@@ -106,9 +106,9 @@ bool remove_mv(char* args_val, int (*args_info)[2], int args_count) {
                         i++;
                     }
                     if (i < lenName) { // Jika ada extension
-                            if (lenName-i-1 > 3) { // Jika extension lebih dari 3 karakter
-                                break;
-                            }
+                        if (lenName-i-1 > 3) { // Jika extension lebih dari 3 karakter
+                            break;
+                        }
                         memcpy(name, args_val + posName, i);
                         if (*(args_val + posName + i + 1) != 0x0A) {
                             memcpy(extension, args_val + posName + i + 1, lenName-i-1);
@@ -150,9 +150,10 @@ bool remove_mv(char* args_val, int (*args_info)[2], int args_count) {
             .buffer_size = 0
     };
     memcpy(&(destReq.name), name, 8);
-    uint32_t retCode;
+    memcpy(&(destReq.ext), extension, 3);
+    uint32_t retCode = 0;
 
-    if (directoryNotFound) {
+    if (directoryNotFound || fileFound) {
         // Check if it is a file or it doesnt exist
         interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
         if (retCode != 0) {
@@ -168,7 +169,6 @@ bool remove_mv(char* args_val, int (*args_info)[2], int args_count) {
             }
             return FALSE;
         }
-        return TRUE;
     }
     else {
         // Directory
@@ -190,9 +190,10 @@ bool remove_mv(char* args_val, int (*args_info)[2], int args_count) {
             }
             return FALSE;
         }
-        return TRUE;
     }
+    return TRUE;
 }
+
 
 bool copy_mv(char* args_val, int (*args_info)[2], int args_count) {
     /* Searches if the destination exists and if it is a file or directory.
@@ -527,7 +528,7 @@ bool copy_mv(char* args_val, int (*args_info)[2], int args_count) {
     };
     memcpy(&(srcReq.name), srcName, 8);
     memcpy(&(srcReq.ext), srcExt, 3);
-    uint32_t retCode;
+    int retCode = 0;
 
     interrupt(0, (uint32_t) &srcReq, (uint32_t) &retCode, 0x0);
 

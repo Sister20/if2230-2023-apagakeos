@@ -146,9 +146,9 @@ void remove(char* args_val, int (*args_info)[2], int args_count) {
     };
     memcpy(&(destReq.name), name, 8);
     memcpy(&(destReq.ext), extension, 3);
-    uint32_t retCode;
+    int retCode = 0;
 
-    if (directoryNotFound) {
+    if (directoryNotFound || fileFound) {
         // Check if it is a file or it doesnt exist
         interrupt(3, (uint32_t) &destReq, (uint32_t) &retCode, 0x0);
         if (retCode != 0) {
