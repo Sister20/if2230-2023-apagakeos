@@ -102,6 +102,7 @@ void keyboard_isr(void) {
     pic_ack(IRQ_KEYBOARD);
 }
 
+// Reset the keyboard position, back to start
 void reset_keyboard_position() {
     keyboard_buffer_read_pos = 0;
     keyboard_buffer_write_pos = 0;

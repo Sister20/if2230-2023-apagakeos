@@ -250,6 +250,9 @@ int main(void) {
             else if ((memcmp(args_val + *(args_info)[0], "whereis", 7) == 0)&& ((*(args_info))[1] == 7)) {
                 whereis(args_val, args_info, args_count);
             }
+            else if ((memcmp(args_val + *(args_info)[0], "clear", 5) == 0)&& ((*(args_info))[1] == 5)) {
+                interrupt(7, 0, 0, 0);
+            }
             else {
                 for (char i = 0; i < (*(args_info))[1]; i++) {
                     putn(args_val + (*(args_info))[0] + i, BIOS_RED, 1);

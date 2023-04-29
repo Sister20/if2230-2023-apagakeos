@@ -66,6 +66,7 @@ bool is_keyboard_blocking(void);
  */
 void keyboard_isr(void);
 
+// Reset the keyboard position, back to start
 void reset_keyboard_position();
 
 // Modified puts() on kernel side
